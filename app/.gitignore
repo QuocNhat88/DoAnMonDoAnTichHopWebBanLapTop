@@ -1,0 +1,24 @@
+# Thư mục chứa thư viện cài bằng npm
+node_modules/
+
+# File môi trường (chứa password, key, database URI)
+.env
+
+# Logs
+*.log
+logs/
+
+# Cache
+.cache/
+.temp/
+
+# Build xuất ra (nếu có)
+dist/
+build/
+
+# VSCode settings cá nhân
+.vscode/
+
+# Hệ điều hành tự tạo
+.DS_Store
+Thumbs.db
