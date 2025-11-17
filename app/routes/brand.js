@@ -28,7 +28,26 @@ router.post("/", protect, isAdmin, brandController.createBrand);
 // Route này không cần 'protect', ai cũng xem được
 router.get("/", brandController.getAllBrands);
 
-// (Chúng ta sẽ thêm route GET /:id, PUT /:id, DELETE /:id sau)
+/**
+ * @route   GET /api/brands/:id
+ * @desc    Lấy chi tiết 1 thương hiệu
+ * @access  Public
+ */
+router.get("/:id", brandController.getBrandById);
+
+/**
+ * @route   PUT /api/brands/:id
+ * @desc    Cập nhật thương hiệu
+ * @access  Private/Admin
+ */
+router.put("/:id", protect, isAdmin, brandController.updateBrand);
+
+/**
+ * @route   DELETE /api/brands/:id
+ * @desc    Xóa thương hiệu
+ * @access  Private/Admin
+ */
+router.delete("/:id", protect, isAdmin, brandController.deleteBrand);
 
 // --- Xuất (Export) router này ra ---
 // ĐÂY LÀ DÒNG ĐÃ SỬA LỖI (exports thay vì module)

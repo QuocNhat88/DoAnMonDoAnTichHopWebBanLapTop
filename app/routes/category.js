@@ -28,7 +28,26 @@ router.post("/", protect, isAdmin, categoryController.createCategory);
 // Route này không cần 'protect', ai cũng xem được
 router.get("/", categoryController.getAllCategories);
 
-// (Chúng ta sẽ thêm route GET /:id, PUT /:id, DELETE /:id sau)
+/**
+ * @route   GET /api/categories/:id
+ * @desc    Lấy chi tiết 1 danh mục
+ * @access  Public
+ */
+router.get("/:id", categoryController.getCategoryById);
+
+/**
+ * @route   PUT /api/categories/:id
+ * @desc    Cập nhật danh mục
+ * @access  Private/Admin
+ */
+router.put("/:id", protect, isAdmin, categoryController.updateCategory);
+
+/**
+ * @route   DELETE /api/categories/:id
+ * @desc    Xóa danh mục
+ * @access  Private/Admin
+ */
+router.delete("/:id", protect, isAdmin, categoryController.deleteCategory);
 
 // --- Xuất (Export) router này ra ---
 // ĐÂY LÀ DÒNG ĐÃ SỬA LỖI (exports thay vì module)
