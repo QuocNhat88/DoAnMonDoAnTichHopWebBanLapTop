@@ -2,12 +2,14 @@ const express = require("express");
 const router = express.Router();
 
 // 1. Import (nhập khẩu) Controller
-// --- PHẦN CẬP NHẬT (Import thêm 1 hàm mới) ---
+// --- PHẦN CẬP NHẬT (Import thêm 3 hàm mới) ---
 const {
   register,
   login,
   getMe,
-  updateUserProfile, // (Hàm mới)
+  updateUserProfile,
+  forgotPassword, // (Hàm mới - Quên mật khẩu)
+  resetPassword, // (Hàm mới - Đặt lại mật khẩu)
 } = require("../controllers/authController");
 
 // 2. Import "người bảo vệ" (middleware)
@@ -20,7 +22,7 @@ router.post("/register", register);
 router.post("/login", login);
 router.get("/me", protect, getMe);
 
-// --- PHẦN CẬP NHẬT (THÊM 1 TUYẾN ĐƯỜNG MỚI) ---
+// --- PHẦN CẬP NHẬT (THÊM 3 TUYẾN ĐƯỜNG MỚI) ---
 
 /**
  * @route   PUT /api/auth/profile
@@ -29,6 +31,22 @@ router.get("/me", protect, getMe);
  */
 // (Chỉ cần 'protect' để biết "profile" của AI)
 router.put("/profile", protect, updateUserProfile);
+
+/**
+ * @route   POST /api/auth/forgotpassword
+ * @desc    Gửi email reset mật khẩu
+ * @access  Public
+ */
+// (Không cần đăng nhập, ai cũng có thể yêu cầu reset)
+router.post("/forgotpassword", forgotPassword);
+
+/**
+ * @route   PUT /api/auth/resetpassword/:resetToken
+ * @desc    Đặt lại mật khẩu mới với token
+ * @access  Public
+ */
+// (resetToken là token được gửi qua email)
+router.put("/resetpassword/:resetToken", resetPassword);
 
 // --- Xuất (Export) router này ra ---
 module.exports = router;
