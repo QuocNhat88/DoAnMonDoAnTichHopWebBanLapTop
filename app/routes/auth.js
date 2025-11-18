@@ -10,6 +10,7 @@ const {
   updateUserProfile,
   forgotPassword, // (Hàm mới - Quên mật khẩu)
   resetPassword, // (Hàm mới - Đặt lại mật khẩu)
+  changePassword, // (Hàm mới - Đổi mật khẩu)
 } = require("../controllers/authController");
 
 // 2. Import "người bảo vệ" (middleware)
@@ -48,5 +49,11 @@ router.post("/forgotpassword", forgotPassword);
 // (resetToken là token được gửi qua email)
 router.put("/resetpassword/:resetToken", resetPassword);
 
+/**
+ * @route   PUT /api/auth/changepassword
+ * @desc    Đổi mật khẩu (khi đã đăng nhập)
+ * @access  Private (User)
+ */
+router.put("/changepassword", protect, changePassword);
 // --- Xuất (Export) router này ra ---
 module.exports = router;
