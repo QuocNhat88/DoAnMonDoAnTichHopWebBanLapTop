@@ -360,13 +360,99 @@ const resetPassword = async (req, res) => {
     });
   }
 };
+/**
+ * --- HÀM 7: ĐỔI MẬT KHẨU (CHANGE PASSWORD) ---
+ * Logic cho: PUT /api/auth/changepassword
+ * Quyền truy cập: Private (User)
+ *
+ * Chức năng:
+ * 1. Nhận mật khẩu cũ và mật khẩu mới
+ * 2. Kiểm tra mật khẩu cũ có đúng không
+ * 3. Mã hóa mật khẩu mới
+ * 4. Cập nhật mật khẩu
+ */
+const changePassword = async (req, res) => {
+  try {
+    // 1. Lấy userId từ req.user (đã được gán bởi middleware 'protect')
+    const userId = req.user.id;
 
-// --- Xuất (Export) CẢ 6 HÀM ra ---
+    // 2. Lấy mật khẩu cũ và mật khẩu mới từ body
+    const { currentPassword, newPassword } = req.body;
+
+    // 3. Kiểm tra các trường bắt buộc
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Vui lòng nhập đầy đủ mật khẩu cũ và mật khẩu mới.",
+      });
+    }
+
+    // 4. Kiểm tra độ dài mật khẩu mới
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Mật khẩu mới phải có ít nhất 6 ký tự.",
+      });
+    }
+
+    // 5. Tìm user trong DB (cần lấy cả password để so sánh)
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy người dùng.",
+      });
+    }
+
+    // 6. Kiểm tra mật khẩu cũ có đúng không
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Mật khẩu hiện tại không chính xác.",
+      });
+    }
+
+    // 7. Kiểm tra mật khẩu mới có khác mật khẩu cũ không
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+
+    if (isSamePassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Mật khẩu mới phải khác mật khẩu cũ.",
+      });
+    }
+
+    // 8. Mã hóa mật khẩu mới
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // 9. Cập nhật mật khẩu
+    user.password = hashedPassword;
+    await user.save();
+
+    // 10. Trả về thành công
+    res.status(200).json({
+      success: true,
+      message: "Đổi mật khẩu thành công!",
+    });
+  } catch (error) {
+    console.error("Lỗi khi đổi mật khẩu:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Đã xảy ra lỗi server. Vui lòng thử lại.",
+    });
+  }
+};
+// --- Xuất (Export) CẢ 7 HÀM ra ---
 module.exports = {
   register,
   login,
   getMe,
   updateUserProfile,
-  forgotPassword, // (Hàm mới)
-  resetPassword, // (Hàm mới)
+  forgotPassword,
+  resetPassword,
+  changePassword, // ← Thêm dòng này
 };
