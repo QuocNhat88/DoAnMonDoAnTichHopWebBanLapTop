@@ -7,6 +7,8 @@ const categoryRouter = require("./category");
 const brandRouter = require("./brand");
 const productRouter = require("./product");
 const cartRouter = require("./cart");
+const userRouter = require("./user");
+const statisticsRouter = require("./statistics");
 
 // --- PHẦN CẬP NHẬT (Bước 12) ---
 // 1. Import tệp route "order" mà chúng ta vừa tạo
@@ -20,7 +22,8 @@ router.use("/api/categories", categoryRouter);
 router.use("/api/brands", brandRouter);
 router.use("/api/products", productRouter);
 router.use("/api/cart", cartRouter);
-
+router.use("/api/users", userRouter);
+router.use("/api/statistics", statisticsRouter);
 // --- PHẦN CẬP NHẬT (Bước 12) ---
 // 2. Khi đường dẫn bắt đầu bằng '/api/orders'
 //    thì sử dụng 'orderRouter'
