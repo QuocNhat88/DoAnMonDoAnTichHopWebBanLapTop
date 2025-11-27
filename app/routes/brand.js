@@ -13,7 +13,7 @@ const { protect, isAdmin } = require("../middleware/authMiddleware");
 // --- Định nghĩa các tuyến đường (routes) ---
 
 /**
- * @route   POST /api/categories
+ * @route   POST /api/brands
  * @desc    Tạo một danh mục mới
  * @access  Private/Admin
  */
@@ -21,7 +21,7 @@ const { protect, isAdmin } = require("../middleware/authMiddleware");
 router.post("/", protect, isAdmin, brandController.createBrand);
 
 /**
- * @route   GET /api/categories
+ * @route   GET /api/brands
  * @desc    Lấy tất cả danh mục
  * @access  Public
  */

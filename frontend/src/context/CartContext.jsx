@@ -1,70 +1,119 @@
 // src/context/CartContext.jsx
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "./AuthContext";
+import cartApi from "../api/cartApi";
 
-// 1. Tạo cái Context (cái khung chứa)
 export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  // 2. State lưu danh sách giỏ hàng
-  // Lấy từ localStorage ra nếu có, nếu không thì là mảng rỗng []
-  const [cartItems, setCartItems] = useState(() => {
-    const savedCart = localStorage.getItem("cartItems");
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
+  const { user } = useContext(AuthContext);
+  const [cartItems, setCartItems] = useState([]);
+  const navigate = useNavigate();
 
-  // 3. Mỗi khi cartItems thay đổi, tự động lưu lại vào localStorage
-  useEffect(() => {
-    localStorage.setItem("cartItems", JSON.stringify(cartItems));
-  }, [cartItems]);
+  // --- 1. HÀM TẢI GIỎ HÀNG TỪ SERVER ---
+  const fetchCart = async () => {
+    try {
+      const response = await cartApi.getMyCart();
+      console.log("Dữ liệu giỏ hàng tải về:", response); // In ra để kiểm tra
 
-  // --- CÁC HÀM XỬ LÝ LOGIC ---
-
-  // Hàm thêm vào giỏ
-  const addToCart = (product) => {
-    setCartItems((prevItems) => {
-      // Kiểm tra xem sản phẩm này đã có trong giỏ chưa
-      const existingItem = prevItems.find((item) => item._id === product._id);
-
-      if (existingItem) {
-        // Nếu có rồi -> Tăng số lượng lên 1 chứ không thêm dòng mới
-        return prevItems.map((item) =>
-          item._id === product._id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      } else {
-        // Nếu chưa có -> Thêm mới vào với số lượng là 1
-        return [...prevItems, { ...product, quantity: 1 }];
+      // SỬA LỖI Ở ĐÂY: Backend trả về 'data', không phải 'cart'
+      if (response && response.data) {
+        const serverCart = response.data.map((item) => ({
+          ...item.product, // Lấy thông tin sản phẩm (name, price...)
+          quantity: item.quantity,
+        }));
+        setCartItems(serverCart);
       }
-    });
-    alert("Đã thêm vào giỏ hàng thành công!"); // Thông báo nhẹ
+    } catch (error) {
+      console.log("Lỗi lấy giỏ hàng:", error);
+    }
   };
 
-  // Hàm xóa khỏi giỏ
-  const removeFromCart = (productId) => {
-    setCartItems((prevItems) =>
-      prevItems.filter((item) => item._id !== productId)
-    );
+  // --- 2. TỰ ĐỘNG TẢI KHI CÓ USER ---
+  useEffect(() => {
+    if (user) {
+      fetchCart();
+    } else {
+      setCartItems([]); // Đăng xuất thì xóa sạch giỏ
+    }
+  }, [user]);
+
+  // --- 3. HÀM THÊM VÀO GIỎ ---
+  const addToCart = async (product) => {
+    if (!user) {
+      alert("Bạn cần đăng nhập để mua hàng!");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      // Gọi API thêm vào DB
+      await cartApi.addToCart({ productId: product._id, quantity: 1 });
+      alert("Đã thêm vào giỏ hàng thành công!");
+
+      // Tải lại giỏ hàng để cập nhật danh sách mới
+      fetchCart();
+    } catch (error) {
+      console.error("Lỗi thêm giỏ hàng:", error);
+      const msg = error.response?.data?.message || "Lỗi kết nối";
+      alert("Không thể thêm vào giỏ: " + msg);
+    }
   };
 
-  // Hàm cập nhật số lượng (Tăng/Giảm)
-  const updateQuantity = (productId, amount) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) => {
-        if (item._id === productId) {
-          const newQuantity = item.quantity + amount;
-          // Nếu số lượng giảm về 0 thì giữ là 1 (hoặc xóa luôn tùy ý, ở đây mình giữ là 1)
-          return { ...item, quantity: newQuantity > 0 ? newQuantity : 1 };
-        }
-        return item;
-      })
-    );
+  // --- 4. HÀM SỬA SỐ LƯỢNG ---
+  const updateQuantity = async (productId, amount) => {
+    if (!user) return;
+
+    const currentItem = cartItems.find((item) => item._id === productId);
+    if (!currentItem) return;
+    const newQuantity = currentItem.quantity + amount;
+    if (newQuantity < 1) return;
+
+    try {
+      // SỬA LỖI 2: Backend yêu cầu 'newQuantity', không phải 'quantity'
+      await cartApi.updateQuantity({
+        productId,
+        newQuantity: newQuantity, // <-- Sửa tên biến cho khớp Backend
+      });
+
+      // Cập nhật giao diện ngay lập tức (cho mượt)
+      setCartItems((prev) =>
+        prev.map((item) =>
+          item._id === productId ? { ...item, quantity: newQuantity } : item
+        )
+      );
+    } catch (error) {
+      console.log("Lỗi update số lượng:", error);
+      fetchCart(); // Lỗi thì tải lại từ server cho chắc
+    }
   };
 
-  // 4. Trả về cái "Két sắt" chứa tất cả dữ liệu và hàm
+  // --- 5. HÀM XÓA SẢN PHẨM ---
+  const removeFromCart = async (productId) => {
+    if (!user) return;
+    try {
+      await cartApi.removeFromCart(productId);
+      setCartItems((prev) => prev.filter((item) => item._id !== productId));
+    } catch (error) {
+      console.log("Lỗi xóa sản phẩm:", error);
+    }
+  };
+
+  const totalPrice = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+
   return (
     <CartContext.Provider
-      value={{ cartItems, addToCart, removeFromCart, updateQuantity }}
+      value={{
+        cartItems,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        totalPrice,
+      }}
     >
       {children}
     </CartContext.Provider>
