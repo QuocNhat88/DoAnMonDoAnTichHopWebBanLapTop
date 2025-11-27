@@ -4,9 +4,8 @@ import axiosClient from "./axiosClient";
 const productApi = {
   // Hàm lấy tất cả sản phẩm
   getAll: (params) => {
-    // Gọi đến đường dẫn: /products (sẽ ghép với baseURL ở trên thành http://localhost:5000/api/products)
-    const url = "/products";
-    return axiosClient.get(url, { params });
+    // axios hỗ trợ truyền params dạng object, nó sẽ tự chuyển thành ?keyword=...
+    return axiosClient.get("/products", { params });
   },
 
   // Hàm lấy chi tiết 1 sản phẩm (sau này sẽ dùng)
