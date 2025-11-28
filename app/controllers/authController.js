@@ -180,108 +180,84 @@ const updateUserProfile = async (req, res) => {
  * 3. Lưu token vào database (có thời hạn 10 phút)
  * 4. Gửi email chứa link reset password
  */
+// backend/controllers/authController.js
+
 const forgotPassword = async (req, res) => {
   try {
-    // 1. Lấy email từ body
     const { email } = req.body;
 
-    // 2. Kiểm tra email có được gửi không
+    // --- LOG 1: Kiểm tra xem Frontend có gọi tới đây không ---
+    console.log("1. Đã nhận yêu cầu quên mật khẩu từ email:", email);
+
     if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: "Vui lòng nhập email của bạn.",
-      });
+      return res.status(400).json({ success: false, message: "Thiếu email." });
     }
 
-    // 3. Tìm user theo email
     const user = await User.findOne({ email: email });
 
-    // 4. Nếu không tìm thấy user, vẫn trả về thành công
-    //    (Để tránh lộ thông tin email có tồn tại hay không)
+    // --- LOG 2: Kiểm tra xem có tìm thấy user không ---
     if (!user) {
+      console.log("2. Lỗi: Không tìm thấy User nào với email này!");
+      // Vẫn trả về thành công để bảo mật (hackers không biết email nào tồn tại)
       return res.status(200).json({
         success: true,
-        message: "Nếu email tồn tại, chúng tôi đã gửi link reset mật khẩu.",
+        message: "Nếu email tồn tại, chúng tôi đã gửi link.",
       });
     }
 
-    // 5. Tạo Reset Token (mã bảo mật ngẫu nhiên)
-    //    crypto.randomBytes(32) tạo ra 32 bytes ngẫu nhiên
-    //    .toString('hex') chuyển thành chuỗi hex (64 ký tự)
-    const resetToken = crypto.randomBytes(32).toString("hex");
+    console.log("3. Đã tìm thấy User:", user.username);
 
-    // 6. Mã hóa token trước khi lưu vào database
-    //    (Để bảo mật hơn, nếu ai đó hack được database)
+    // Tạo token
+    const resetToken = crypto.randomBytes(32).toString("hex");
     const hashedToken = crypto
       .createHash("sha256")
       .update(resetToken)
       .digest("hex");
 
-    // 7. Lưu token đã mã hóa và thời gian hết hạn (10 phút) vào database
+    // Lưu vào DB
     user.resetPasswordToken = hashedToken;
-    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 phút
-    await user.save({ validateBeforeSave: false }); // Bỏ qua validation
+    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000;
+    await user.save({ validateBeforeSave: false });
 
-    // 7.5. Log token ra console để test (CHỈ DÙNG KHI DEVELOPMENT)
-    console.log("===========================================");
-    console.log("🔑 RESET TOKEN (Dùng để test trong Postman):");
-    console.log(resetToken);
-    console.log("===========================================");
+    // --- LOG 3: TOKEN QUAN TRỌNG ĐÂY RỒI ---
+    console.log("======================================");
+    console.log("🔑 COPY TOKEN NÀY:", resetToken);
+    console.log("======================================");
 
-    // 8. Tạo URL reset password
-    //    (Bạn có thể thay đổi URL này tùy theo frontend của bạn)
+    // Tạo link (Nhớ sửa cổng thành 5173 nhé)
     const resetUrl = `${
-      process.env.FRONTEND_URL || "http://localhost:3000"
+      process.env.FRONTEND_URL || "http://localhost:5173"
     }/resetpassword/${resetToken}`;
 
-    // 9. Tạo nội dung email
-    const message = `
-      <h2>Xin chào ${user.username || user.email},</h2>
-      <p>Bạn đã yêu cầu reset mật khẩu cho tài khoản của mình.</p>
-      <p>Vui lòng click vào link bên dưới để đặt lại mật khẩu:</p>
-      <a href="${resetUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-        Reset Mật Khẩu
-      </a>
-      <p>Link này sẽ hết hạn sau <strong>10 phút</strong>.</p>
-      <p>Nếu bạn không yêu cầu reset mật khẩu, vui lòng bỏ qua email này.</p>
-      <hr>
-      <p><small>WebBanLaptop Team</small></p>
-    `;
+    const message = `Click vào đây để reset: <a href="${resetUrl}">Reset Password</a>`;
 
-    // 10. Gửi email
     try {
       await sendEmail({
         email: user.email,
-        subject: "Yêu cầu Reset Mật Khẩu - WebBanLaptop",
+        subject: "Reset Password",
         message: message,
       });
 
+      console.log("4. Đã gửi email thành công (giả lập)");
+
       res.status(200).json({
         success: true,
-        message:
-          "Email reset mật khẩu đã được gửi! Vui lòng kiểm tra hộp thư của bạn.",
+        message: "Đã gửi email (hoặc hãy xem Console Backend để lấy Token).",
       });
     } catch (error) {
-      // Nếu gửi email thất bại, xóa token đã lưu
       user.resetPasswordToken = undefined;
       user.resetPasswordExpires = undefined;
       await user.save({ validateBeforeSave: false });
-
-      console.error("Lỗi khi gửi email:", error.message);
-      return res.status(500).json({
-        success: false,
-        message: "Không thể gửi email. Vui lòng thử lại sau.",
-      });
+      console.log("Lỗi gửi email:", error.message);
+      return res
+        .status(500)
+        .json({ success: false, message: "Lỗi gửi email." });
     }
   } catch (error) {
-    console.error("Lỗi khi xử lý quên mật khẩu:", error.message);
-    res.status(500).json({
-      success: false,
-      message: "Đã xảy ra lỗi server. Vui lòng thử lại.",
-    });
+    console.log("Lỗi hệ thống:", error);
+    res.status(500).json({ success: false, message: "Lỗi server." });
   }
 };
-
 /**
  * --- HÀM 6: ĐẶT LẠI MẬT KHẨU (RESET PASSWORD) ---
  * Logic cho: PUT /api/auth/resetpassword/:resetToken
@@ -298,6 +274,12 @@ const resetPassword = async (req, res) => {
     // 1. Lấy resetToken từ params và password mới từ body
     const { resetToken } = req.params;
     const { password } = req.body;
+
+    console.log("-----------------------------------");
+    console.log("1. Backend nhận yêu cầu Reset Password");
+    console.log("2. Token nhận từ URL:", resetToken);
+    console.log("3. Password nhận từ Body:", password);
+    console.log("-----------------------------------");
 
     // 2. Kiểm tra password có được gửi không
     if (!password) {

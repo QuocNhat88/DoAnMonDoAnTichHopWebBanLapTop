@@ -6,31 +6,50 @@ const mongoose = require("mongoose");
  * --- HÀM 1: LẤY TẤT CẢ SẢN PHẨM (GET ALL) ---
  * (Hàm này đã được "nâng cấp" với chức năng TÌM KIẾM)
  */
+
 const getAllProducts = async (req, res) => {
   try {
-    // --- PHẦN CẬP NHẬT (Tìm kiếm) ---
-    // 1. Tạo một "keyword" (từ khóa)
-    //    Lấy từ "tham số truy vấn" (query parameter) tên là 'keyword'
-    //    (VD: /api/products?keyword=dell)
-    const keyword = req.query.keyword
-      ? {
-          // 2. Nếu có keyword:
-          name: {
-            $regex: req.query.keyword, // Tìm từ khóa
-            $options: "i", // 'i' = không phân biệt hoa/thường
-          },
-        }
-      : {}; // 3. Nếu không có keyword: Dùng object rỗng {}
+    // 1. Lấy các tham số từ URL
+    // Ví dụ: ?keyword=dell&category=ID_ABC&minPrice=1000000&maxPrice=5000000
+    const { keyword, category, brand, minPrice, maxPrice } = req.query;
 
-    // --- HẾT PHẦN CẬP NHẬT ---
+    console.log("-------------------------------");
+    console.log("🔥 Filter nhận được từ Frontend:");
+    console.log("Keyword:", keyword);
+    console.log("Category:", category);
+    console.log("Brand:", brand);
+    console.log("Price:", minPrice, " - ", maxPrice);
 
-    // 4. Thay vì Product.find({})
-    //    Chúng ta dùng Product.find({ ...keyword })
-    //    (Nếu keyword là {}, nó sẽ tìm tất cả)
-    //    (Nếu keyword là { name: ... }, nó sẽ tìm theo tên)
-    const products = await Product.find({ ...keyword })
+    // 2. Tạo một object chứa các điều kiện tìm kiếm
+    let query = {};
+
+    // - Tìm theo tên (như cũ)
+    if (keyword) {
+      query.name = { $regex: keyword, $options: "i" };
+    }
+
+    // - Lọc theo Danh mục (nếu có gửi lên)
+    if (category) {
+      query.category = category;
+    }
+
+    // - Lọc theo Thương hiệu (nếu có gửi lên)
+    if (brand) {
+      query.brand = brand;
+    }
+
+    // - Lọc theo Giá (Khoảng giá)
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = Number(minPrice); // Lớn hơn hoặc bằng min
+      if (maxPrice) query.price.$lte = Number(maxPrice); // Nhỏ hơn hoặc bằng max
+    }
+
+    // 3. Gọi Database với bộ lọc vừa tạo
+    const products = await Product.find(query)
       .populate("category", "name")
-      .populate("brand", "name");
+      .populate("brand", "name")
+      .sort({ createdAt: -1 }); // Sắp xếp mới nhất lên đầu
 
     res.status(200).json({
       success: true,
@@ -38,11 +57,8 @@ const getAllProducts = async (req, res) => {
       data: products,
     });
   } catch (error) {
-    console.error("Lỗi khi lấy sản phẩm:", error.message);
-    res.status(500).json({
-      success: false,
-      message: "Đã xảy ra lỗi server.",
-    });
+    console.error("Lỗi lấy sản phẩm:", error.message);
+    res.status(500).json({ success: false, message: "Lỗi Server" });
   }
 };
 
@@ -53,22 +69,18 @@ const createProduct = async (req, res) => {
     const productData = req.body;
     const newProduct = new Product({ ...productData });
     await newProduct.save();
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "Tạo sản phẩm mới thành công!",
-        data: newProduct,
-      });
+    res.status(201).json({
+      success: true,
+      message: "Tạo sản phẩm mới thành công!",
+      data: newProduct,
+    });
   } catch (error) {
     console.error("Lỗi khi tạo sản phẩm:", error.message);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message:
-          "Đã xảy ra lỗi server. Có thể Category ID hoặc Brand ID không đúng.",
-      });
+    res.status(500).json({
+      success: false,
+      message:
+        "Đã xảy ra lỗi server. Có thể Category ID hoặc Brand ID không đúng.",
+    });
   }
 };
 
@@ -114,28 +126,22 @@ const updateProduct = async (req, res) => {
       { new: true, runValidators: true }
     );
     if (!updatedProduct) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "Không tìm thấy sản phẩm để cập nhật.",
-        });
-    }
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Cập nhật sản phẩm thành công!",
-        data: updatedProduct,
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy sản phẩm để cập nhật.",
       });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Cập nhật sản phẩm thành công!",
+      data: updatedProduct,
+    });
   } catch (error) {
     console.error("Lỗi khi cập nhật sản phẩm:", error.message);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Đã xảy ra lỗi server. Có thể Category/Brand ID không đúng.",
-      });
+    res.status(500).json({
+      success: false,
+      message: "Đã xảy ra lỗi server. Có thể Category/Brand ID không đúng.",
+    });
   }
 };
 

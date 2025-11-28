@@ -9,6 +9,9 @@ import CartPage from "./pages/CartPage.jsx";
 import CheckoutPage from "./pages/CheckoutPage.jsx";
 import MyOrdersPage from "./pages/MyOrdersPage.jsx";
 import OrderDetailPage from "./pages/OrderDetailPage.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
+import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 function App() {
   return (
     <Routes>
@@ -21,6 +24,9 @@ function App() {
         <Route path="checkout" element={<CheckoutPage />} />
         <Route path="my-orders" element={<MyOrdersPage />} />
         <Route path="order/:id" element={<OrderDetailPage />} />
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="resetpassword/:token" element={<ResetPasswordPage />} />
       </Route>
     </Routes>
   );

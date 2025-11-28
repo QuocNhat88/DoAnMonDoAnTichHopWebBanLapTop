@@ -78,7 +78,14 @@ function LoginPage() {
               required
             />
           </div>
-
+          <div className="flex justify-end mb-4">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Quên mật khẩu?
+            </Link>
+          </div>
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition font-bold"

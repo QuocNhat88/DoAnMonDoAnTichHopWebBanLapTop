@@ -67,7 +67,6 @@ function Header() {
             )}
             <span className="font-medium hidden sm:block">Giỏ hàng</span>
           </Link>
-
           {user ? (
             <div className="flex items-center gap-4">
               {/* Sửa lại Link vào trang cá nhân */}
@@ -76,6 +75,12 @@ function Header() {
                 className="font-medium text-gray-800 hover:text-blue-600"
               >
                 Hi, {user.fullName || user.username}
+              </Link>
+              <Link
+                to="/my-orders"
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Đơn hàng
               </Link>
               <button
                 onClick={logout}
