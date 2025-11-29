@@ -23,6 +23,15 @@ const orderApi = {
   cancelOrder: (id) => {
     return axiosClient.put(`/orders/${id}/cancel`);
   },
+  // 1. Admin lấy tất cả đơn hàng
+  getAllOrders: () => {
+    return axiosClient.get("/orders");
+  },
+
+  // 2. Admin cập nhật trạng thái (Duyệt đơn)
+  updateStatus: (id, status) => {
+    return axiosClient.put(`/orders/${id}/status`, { status });
+  },
 };
 
 export default orderApi;

@@ -76,6 +76,19 @@ function Header() {
               >
                 Hi, {user.fullName || user.username}
               </Link>
+              {/* --- ĐOẠN CODE QUAN TRỌNG: CHỈ ADMIN MỚI THẤY --- */}
+              {user.role === "admin" && (
+                <>
+                  <Link
+                    to="/admin/products"
+                    className="text-sm font-bold text-red-600 hover:underline flex items-center gap-1 border border-red-600 px-2 py-1 rounded"
+                  >
+                    ⚙️ Quản lý
+                  </Link>
+                  <span className="text-gray-300">|</span>
+                </>
+              )}
+
               <Link
                 to="/my-orders"
                 className="text-sm text-blue-600 hover:underline"
