@@ -2,16 +2,31 @@
 import axiosClient from "./axiosClient";
 
 const productApi = {
-  // Hàm lấy tất cả sản phẩm
+  // Lấy danh sách (có lọc)
   getAll: (params) => {
-    // axios hỗ trợ truyền params dạng object, nó sẽ tự chuyển thành ?keyword=...
     return axiosClient.get("/products", { params });
   },
 
-  // Hàm lấy chi tiết 1 sản phẩm (sau này sẽ dùng)
+  // Lấy chi tiết 1 sản phẩm
   get: (id) => {
-    const url = `/products/${id}`;
-    return axiosClient.get(url);
+    return axiosClient.get(`/products/${id}`);
+  },
+
+  // --- CÁC HÀM CHO ADMIN ---
+
+  // 1. Thêm sản phẩm mới
+  add: (data) => {
+    return axiosClient.post("/products", data);
+  },
+
+  // 2. Cập nhật sản phẩm (Sửa)
+  update: (id, data) => {
+    return axiosClient.put(`/products/${id}`, data);
+  },
+
+  // 3. Xóa sản phẩm
+  delete: (id) => {
+    return axiosClient.delete(`/products/${id}`);
   },
 };
 
