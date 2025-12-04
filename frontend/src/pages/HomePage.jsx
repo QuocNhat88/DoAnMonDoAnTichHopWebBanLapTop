@@ -8,14 +8,9 @@ import brandApi from "../api/brandApi";
 function HomePage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // --- STATE MỚI: QUẢN LÝ SỐ LƯỢNG HIỂN THỊ ---
-  const [visibleCount, setVisibleCount] = useState(12); // Mặc định hiện 12 cái
-  // ---------------------------------------------
-
+  const [visibleCount, setVisibleCount] = useState(12);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
-
   const [filter, setFilter] = useState({
     category: "",
     brand: "",
@@ -26,7 +21,6 @@ function HomePage() {
   const [searchParams] = useSearchParams();
   const keyword = searchParams.get("keyword");
 
-  // 1. Tải danh mục & thương hiệu
   useEffect(() => {
     const fetchMetaData = async () => {
       try {
@@ -43,7 +37,6 @@ function HomePage() {
     fetchMetaData();
   }, []);
 
-  // 2. Tải sản phẩm
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
@@ -57,10 +50,7 @@ function HomePage() {
         };
         const response = await productApi.getAll(params);
         setProducts(response.data || response.products || []);
-
-        // --- QUAN TRỌNG: RESET SỐ LƯỢNG VỀ 12 KHI LỌC/TÌM KIẾM ---
         setVisibleCount(12);
-        // --------------------------------------------------------
       } catch (error) {
         console.log("Lỗi lấy sản phẩm:", error);
       } finally {
@@ -70,17 +60,17 @@ function HomePage() {
     fetchProducts();
   }, [keyword, filter]);
 
-  // Xử lý bộ lọc
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilter((prev) => ({ ...prev, [name]: value }));
   };
 
-  // --- HÀM XỬ LÝ NÚT XEM THÊM ---
   const handleLoadMore = () => {
-    setVisibleCount((prev) => prev + 8); // Mỗi lần bấm hiện thêm 8 cái
+    setVisibleCount((prev) => prev + 8);
   };
-  // ------------------------------
+
+  const topCategories = categories.slice(0, 6);
+  const featuredBrands = brands.slice(0, 5);
 
   // Component Card (Giữ nguyên cho đẹp)
   const ProductCard = ({ product }) => (
@@ -128,59 +118,223 @@ function HomePage() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* Banner & Hero (Chỉ hiện khi không tìm kiếm) */}
       {!keyword && (
-        <div className="bg-white pb-8">
-          <div className="container mx-auto px-4 py-6">
-            <div className="bg-gradient-to-r from-indigo-900 to-blue-800 rounded-2xl p-8 md:p-16 text-white shadow-xl relative overflow-hidden">
-              <div className="relative z-10 max-w-2xl">
-                <h1 className="text-3xl md:text-5xl font-extrabold mb-4 leading-tight">
-                  Săn Sale Cuối Năm <br /> Laptop Giá Hủy Diệt
-                </h1>
-                <p className="text-lg text-blue-100 mb-8">
-                  Hàng chính hãng, bảo hành tận nơi. Giảm thêm 500k cho học sinh
-                  sinh viên.
+        <section className="bg-white">
+          <div className="container mx-auto px-4 pt-8 pb-10">
+            <div className="grid lg:grid-cols-2 gap-10 items-center">
+              <div>
+                <p className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-semibold uppercase tracking-widest mb-4">
+                  Mừng Lễ Giáng Sinh · Giảm đến 40%
                 </p>
-                <button
-                  onClick={() =>
-                    document
-                      .getElementById("shop-section")
-                      .scrollIntoView({ behavior: "smooth" })
-                  }
-                  className="bg-yellow-400 text-gray-900 px-8 py-3 rounded-full font-bold hover:bg-yellow-300 transition shadow-lg"
-                >
-                  Mua Ngay Kẻo Lỡ
-                </button>
+                <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-6">
+                  Laptop chính hãng cho làm việc, học tập và gaming
+                </h1>
+                <p className="text-gray-600 text-lg mb-8">
+                  Đặt hàng online giao nhanh trong 2h, hỗ trợ đổi trả 7 ngày và
+                  bảo hành tận nhà toàn quốc.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button
+                    onClick={() =>
+                      document
+                        .getElementById("shop-section")
+                        .scrollIntoView({ behavior: "smooth" })
+                    }
+                    className="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-blue-500 transition"
+                  >
+                    Xem ưu đãi hôm nay
+                  </button>
+                  <button className="px-8 py-3 rounded-full border border-gray-200 font-semibold text-gray-700 hover:border-blue-500 hover:text-blue-600 transition">
+                    Tư vấn miễn phí
+                  </button>
+                </div>
+                <div className="mt-10 grid grid-cols-3 gap-4 text-center text-sm text-gray-600">
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-2xl font-bold text-gray-900">
+                      {products.length || 250}+
+                    </p>
+                    <p>mẫu laptop</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-2xl font-bold text-gray-900">24/7</p>
+                    <p>Hỗ trợ kỹ thuật</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-2xl font-bold text-gray-900">4.8/5</p>
+                    <p>Điểm đánh giá</p>
+                  </div>
+                </div>
               </div>
-              <div className="absolute top-0 right-0 w-1/2 h-full bg-white opacity-5 transform skew-x-12 translate-x-20"></div>
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 blur-3xl opacity-30"></div>
+                <div className="relative bg-gray-900 rounded-3xl p-6 shadow-2xl">
+                  <div className="bg-gradient-to-br from-gray-800 via-gray-900 to-black rounded-2xl overflow-hidden">
+                    <img
+                      src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=900&q=80"
+                      alt="Laptop showroom"
+                      className="w-full h-72 object-cover opacity-90"
+                    />
+                  </div>
+                  <div className="mt-6 grid grid-cols-2 gap-4 text-sm text-white">
+                    <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
+                      <p className="text-xs uppercase text-blue-200">
+                        Đổi trả 7 ngày
+                      </p>
+                      <p className="text-xl font-semibold">Miễn phí</p>
+                    </div>
+                    <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
+                      <p className="text-xs uppercase text-blue-200">
+                        Giao hàng
+                      </p>
+                      <p className="text-xl font-semibold">2 giờ</p>
+                    </div>
+                    <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
+                      <p className="text-xs uppercase text-blue-200">
+                        Trả góp linh hoạt
+                      </p>
+                      <p className="text-xl font-semibold">0% lãi</p>
+                    </div>
+                    <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
+                      <p className="text-xs uppercase text-blue-200">
+                        Bảo hành tận nơi
+                      </p>
+                      <p className="text-xl font-semibold">36 tháng</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
       )}
 
-      {/* SHOPPING SECTION */}
-      <div id="shop-section" className="container mx-auto px-4 py-8">
-        {keyword ? (
-          <h2 className="text-2xl font-bold mb-6">Tìm kiếm: "{keyword}"</h2>
-        ) : (
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 uppercase border-l-4 border-red-600 pl-3">
-              Tất cả sản phẩm
-            </h2>
-            <span className="text-gray-500 text-sm">
-              {products.length} sản phẩm
-            </span>
+      {!keyword && topCategories.length > 0 && (
+        <section className="container mx-auto px-4 py-8">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <p className="text-xs uppercase text-blue-500 font-semibold">
+                Mua theo nhu cầu
+              </p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Danh mục nổi bật
+              </h2>
+            </div>
+            <Link
+              to="/products"
+              className="text-sm font-semibold text-blue-600 hover:text-blue-500"
+            >
+              Xem tất cả →
+            </Link>
           </div>
-        )}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {topCategories.map((cat) => (
+              <button
+                key={cat._id}
+                onClick={() =>
+                  setFilter((prev) => ({ ...prev, category: cat._id }))
+                }
+                className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center justify-between hover:border-blue-500 hover:shadow-lg transition"
+              >
+                <div className="text-left">
+                  <p className="text-xs uppercase text-gray-400">
+                    {cat.productsCount || "Phổ biến"}
+                  </p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {cat.name}
+                  </p>
+                </div>
+                <span className="text-blue-500 text-2xl">→</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* SIDEBAR LỌC */}
-          <div className="w-full md:w-1/5 space-y-6">
-            <div className="bg-white p-4 rounded-lg shadow-sm border">
-              <h3 className="font-bold text-gray-800 mb-3 text-sm uppercase">
-                Danh mục
-              </h3>
-              <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+      {!keyword && featuredBrands.length > 0 && (
+        <section className="container mx-auto px-4 pb-8">
+          <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <p className="text-xs uppercase text-blue-500 font-semibold">
+                  Thương hiệu được yêu thích
+                </p>
+                <h3 className="text-xl font-bold text-gray-900">
+                  Chính hãng 100%, hỗ trợ bảo hành toàn quốc
+                </h3>
+              </div>
+              <p className="text-sm text-gray-500">
+                Chạm để lọc nhanh theo thương hiệu
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {featuredBrands.map((brand) => (
+                <button
+                  key={brand._id}
+                  onClick={() =>
+                    setFilter((prev) => ({ ...prev, brand: brand._id }))
+                  }
+                  className={`px-4 py-2 rounded-full border text-sm font-semibold transition ${
+                    filter.brand === brand._id
+                      ? "bg-blue-600 border-blue-600 text-white"
+                      : "border-gray-200 text-gray-700 hover:border-blue-500 hover:text-blue-600"
+                  }`}
+                >
+                  {brand.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section
+        id="shop-section"
+        className="container mx-auto px-4 pb-12 space-y-6"
+      >
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            {keyword ? (
+              <p className="text-sm uppercase text-gray-400 font-semibold">
+                Kết quả tìm kiếm
+              </p>
+            ) : (
+              <p className="text-sm uppercase text-gray-400 font-semibold">
+                Sản phẩm mới cập nhật
+              </p>
+            )}
+            <h2 className="text-3xl font-bold text-gray-900">
+              {keyword ? `Từ khóa “${keyword}”` : "Bộ sưu tập mới nhất"}
+            </h2>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-gray-600">
+            <p className="px-3 py-1 rounded-full bg-white border border-gray-100 shadow-sm">
+              {products.length} sản phẩm
+            </p>
+            {!keyword && (
+              <p className="px-3 py-1 rounded-full bg-white border border-gray-100 shadow-sm">
+                Giao nhanh 2h
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[280px,1fr]">
+          <div className="space-y-6">
+            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-gray-900 uppercase text-sm tracking-wide">
+                  Danh mục
+                </h3>
+                <button
+                  onClick={() =>
+                    setFilter((prev) => ({ ...prev, category: "" }))
+                  }
+                  className="text-xs text-blue-600"
+                >
+                  Xóa
+                </button>
+              </div>
+              <div className="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
                 <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-blue-600">
                   <input
                     type="radio"
@@ -209,15 +363,23 @@ function HomePage() {
               </div>
             </div>
 
-            <div className="bg-white p-4 rounded-lg shadow-sm border">
-              <h3 className="font-bold text-gray-800 mb-3 text-sm uppercase">
-                Thương hiệu
-              </h3>
+            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900 uppercase text-sm tracking-wide">
+                  Thương hiệu
+                </h3>
+                <button
+                  onClick={() => setFilter((prev) => ({ ...prev, brand: "" }))}
+                  className="text-xs text-blue-600"
+                >
+                  Xóa
+                </button>
+              </div>
               <select
                 name="brand"
                 value={filter.brand}
                 onChange={handleFilterChange}
-                className="w-full border rounded p-2 text-sm"
+                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Tất cả thương hiệu</option>
                 {brands.map((b) => (
@@ -228,18 +390,18 @@ function HomePage() {
               </select>
             </div>
 
-            <div className="bg-white p-4 rounded-lg shadow-sm border">
-              <h3 className="font-bold text-gray-800 mb-3 text-sm uppercase">
+            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+              <h3 className="font-semibold text-gray-900 uppercase text-sm tracking-wide">
                 Khoảng giá
               </h3>
-              <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-3">
                 <input
                   type="number"
                   name="minPrice"
                   placeholder="Từ (đ)"
                   value={filter.minPrice}
                   onChange={handleFilterChange}
-                  className="w-full border rounded p-2 text-sm"
+                  className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500"
                 />
                 <input
                   type="number"
@@ -247,7 +409,7 @@ function HomePage() {
                   placeholder="Đến (đ)"
                   value={filter.maxPrice}
                   onChange={handleFilterChange}
-                  className="w-full border rounded p-2 text-sm"
+                  className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <button
@@ -259,53 +421,63 @@ function HomePage() {
                     maxPrice: "",
                   })
                 }
-                className="w-full mt-3 bg-gray-200 text-gray-700 text-xs py-2 rounded hover:bg-gray-300"
+                className="w-full bg-gray-900 text-white py-2.5 rounded-lg font-semibold hover:bg-gray-800 transition"
               >
                 Xóa bộ lọc
               </button>
             </div>
+
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl p-5 shadow-lg">
+              <p className="text-xs uppercase tracking-[0.2em] mb-2">
+                Ưu đãi độc quyền
+              </p>
+              <p className="text-lg font-semibold mb-3">
+                Giảm thêm 500.000đ cho khách hàng mới
+              </p>
+              <p className="text-sm text-blue-100">
+                Nhập mã NEW500 khi thanh toán. Áp dụng cho đơn từ 15 triệu.
+              </p>
+            </div>
           </div>
 
-          {/* DANH SÁCH SẢN PHẨM (MAIN) */}
-          <div className="w-full md:w-4/5">
+          <div>
             {loading ? (
-              <div className="text-center py-20">
+              <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-2 text-gray-500">Đang tải sản phẩm...</p>
+                <p className="mt-4 text-gray-500">Đang tải sản phẩm...</p>
               </div>
             ) : products.length > 0 ? (
-              <>
-                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {/* --- CHỈ HIỂN THỊ SỐ LƯỢNG GIỚI HẠN (Visible Count) --- */}
+              <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                   {products.slice(0, visibleCount).map((product) => (
                     <ProductCard key={product._id} product={product} />
                   ))}
                 </div>
-
-                {/* --- NÚT XEM THÊM --- */}
-                {/* Chỉ hiện nút nếu số lượng hiển thị nhỏ hơn tổng sản phẩm */}
                 {visibleCount < products.length && (
                   <div className="text-center mt-10">
                     <button
                       onClick={handleLoadMore}
-                      className="bg-white border border-blue-600 text-blue-600 px-8 py-2 rounded-full font-bold hover:bg-blue-600 hover:text-white transition shadow-sm"
+                      className="inline-flex items-center gap-2 bg-gray-900 text-white px-8 py-3 rounded-full font-semibold hover:bg-gray-800 transition"
                     >
-                      Xem thêm {products.length - visibleCount} sản phẩm nữa
-                      &darr;
+                      Xem thêm {products.length - visibleCount} sản phẩm
+                      <span className="text-lg">↓</span>
                     </button>
                   </div>
                 )}
-              </>
+              </div>
             ) : (
-              <div className="text-center py-20 bg-white rounded border">
+              <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
                 <p className="text-gray-500">
                   Không tìm thấy sản phẩm nào phù hợp.
+                </p>
+                <p className="text-sm text-gray-400 mt-2">
+                  Vui lòng thử lại với bộ lọc hoặc từ khóa khác.
                 </p>
               </div>
             )}
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

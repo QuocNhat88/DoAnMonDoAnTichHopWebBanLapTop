@@ -1,50 +1,93 @@
+const supportLinks = [
+  "Chính sách bảo hành",
+  "Hướng dẫn mua trả góp",
+  "Giao nhận & thanh toán",
+  "Điều khoản sử dụng",
+];
+
+const customerServices = [
+  "Theo dõi đơn hàng",
+  "Trung tâm bảo hành",
+  "Góp ý & khiếu nại",
+  "Tuyển dụng",
+];
+
 function Footer() {
   return (
-    <footer className="bg-gray-800 text-white mt-auto">
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Cột 1: Thông tin chung */}
+    <footer className="bg-gray-950 text-gray-200 mt-auto">
+      <div className="container mx-auto px-4 py-12 space-y-10">
+        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
           <div>
-            <h3 className="text-xl font-bold mb-4">Về chúng tôi</h3>
-            <p className="text-gray-400">
-              Chuyên cung cấp laptop chính hãng, giá rẻ nhất thị trường. Bảo
-              hành uy tín, chất lượng hàng đầu.
+            <h3 className="text-2xl font-extrabold text-white mb-3">
+              LapTopStore
+            </h3>
+            <p className="text-sm text-gray-400 mb-4">
+              Hệ thống bán lẻ laptop chính hãng cho học tập, làm việc và gaming.
+              Cam kết giá tốt, giao nhanh và chăm sóc hậu mãi tận tâm.
             </p>
+            <div className="flex items-center gap-3 text-xl">
+              <a href="#" className="hover:text-blue-400">
+                ƒ
+              </a>
+              <a href="#" className="hover:text-blue-400">
+                ►
+              </a>
+              <a href="#" className="hover:text-blue-400">
+                ⌾
+              </a>
+              <a href="#" className="hover:text-blue-400">
+                in
+              </a>
+            </div>
           </div>
 
-          {/* Cột 2: Liên kết nhanh */}
           <div>
-            <h3 className="text-xl font-bold mb-4">Liên kết</h3>
-            <ul className="text-gray-400 space-y-2">
-              <li>
-                <a href="#" className="hover:text-white">
-                  Chính sách bảo hành
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white">
-                  Đổi trả hàng
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white">
-                  Liên hệ hỗ trợ
-                </a>
-              </li>
+            <h4 className="text-lg font-semibold text-white mb-4">
+              Hỗ trợ khách hàng
+            </h4>
+            <ul className="space-y-2 text-sm text-gray-400">
+              {supportLinks.map((item) => (
+                <li key={item}>
+                  <a href="#" className="hover:text-white transition">
+                    {item}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Cột 3: Liên hệ */}
           <div>
-            <h3 className="text-xl font-bold mb-4">Liên hệ</h3>
-            <p className="text-gray-400">📍 123 Đường ABC, TP.HCM</p>
-            <p className="text-gray-400">📞 0909.123.456</p>
-            <p className="text-gray-400">✉️ support@laptopstore.com</p>
+            <h4 className="text-lg font-semibold text-white mb-4">
+              Dịch vụ nổi bật
+            </h4>
+            <ul className="space-y-2 text-sm text-gray-400">
+              {customerServices.map((item) => (
+                <li key={item}>
+                  <a href="#" className="hover:text-white transition">
+                    {item}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
-        <div className="border-t border-gray-700 mt-8 pt-4 text-center text-gray-500">
-          © 2024 Laptop Store. All rights reserved.
+        <div className="grid gap-6 md:grid-cols-2 text-sm">
+          <div className="flex flex-col gap-1">
+            <p className="font-semibold text-white">Liên hệ</p>
+            <p>📍 123 Nguyễn Thị Minh Khai, Quận 1, TP.HCM</p>
+            <p>📞 1900 1234 (7h30 - 21h30)</p>
+            <p>✉️ support@LapTopStore.vn</p>
+          </div>
+          <div className="flex flex-col gap-1">
+            <p className="font-semibold text-white">Thời gian làm việc</p>
+            <p>Thứ 2 - Thứ 7: 8h00 - 21h30</p>
+            <p>Chủ nhật & Lễ: 9h00 - 18h00</p>
+          </div>
+        </div>
+
+        <div className="border-t border-gray-900 pt-6 text-center text-sm text-gray-500">
+          © {new Date().getFullYear()} LapTopStore. Đã đăng ký bản quyền.
         </div>
       </div>
     </footer>
