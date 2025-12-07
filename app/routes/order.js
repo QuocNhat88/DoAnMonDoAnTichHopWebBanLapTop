@@ -2,14 +2,14 @@ const express = require("express");
 const router = express.Router();
 
 // 1. Import (nhập khẩu) Controller
-// --- PHẦN CẬP NHẬT (Import thêm 1 hàm mới) ---
 const {
   createOrder,
   getMyOrders,
   getOrderById,
   getAllOrders,
   updateOrderStatus,
-  cancelOrder, // (Hàm mới)
+  cancelOrder,
+  webhookCasso, // <--- THÊM HÀM NÀY VÀO
 } = require("../controllers/orderController");
 
 // 2. Import "người bảo vệ" (middleware)
@@ -17,22 +17,21 @@ const { protect, isAdmin } = require("../middleware/authMiddleware");
 
 // --- Định nghĩa các tuyến đường (routes) ---
 
-// (Các route cũ của bạn)
-router.post("/", protect, createOrder); // User
-router.get("/myorders", protect, getMyOrders); // User
-router.get("/", protect, isAdmin, getAllOrders); // Admin
-router.get("/:id", protect, getOrderById); // User/Admin
-router.put("/:id/status", protect, isAdmin, updateOrderStatus); // Admin
+// --- ROUTE ĐẶC BIỆT (WEBHOOK) ---
+// Phải đặt route này LÊN TRƯỚC route /:id để tránh bị nhầm lẫn
+// QUAN TRỌNG: Không dùng middleware 'protect' vì Casso gọi từ bên ngoài
+router.post("/webhook/casso", webhookCasso);
 
-// --- PHẦN CẬP NHẬT (THÊM 1 TUYẾN ĐƯỜNG MỚI) ---
+// --- CÁC ROUTE KHÁC ---
 
-/**
- * @route   PUT /api/orders/:id/cancel
- * @desc    Hủy đơn hàng (User)
- * @access  Private (User)
- */
-// (Chỉ cần 'protect' - logic sở hữu nằm trong Controller)
-router.put("/:id/cancel", protect, cancelOrder);
+router.post("/", protect, createOrder); // Tạo đơn hàng
+router.get("/myorders", protect, getMyOrders); // Xem lịch sử đơn của tôi
+router.get("/", protect, isAdmin, getAllOrders); // Admin xem tất cả
+
+// --- Route thao tác trên ID cụ thể ---
+router.get("/:id", protect, getOrderById); // Xem chi tiết 1 đơn
+router.put("/:id/status", protect, isAdmin, updateOrderStatus); // Admin cập nhật trạng thái
+router.put("/:id/cancel", protect, cancelOrder); // Hủy đơn hàng
 
 // --- Xuất (Export) router này ra ---
 module.exports = router;

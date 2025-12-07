@@ -1,135 +1,171 @@
-// ... (Import models Order, User, Product, mongoose)
 const Order = require("../models/Order");
 const User = require("../models/User");
 const Product = require("../models/Product");
 const mongoose = require("mongoose");
 
-// --- HÀM 1: CREATE ORDER (Bạn đã có) ---
+/**
+ * --- HÀM 1: TẠO ĐƠN HÀNG (CREATE ORDER) ---
+ * Xử lý cả COD và Banking (chờ thanh toán)
+ */
 const createOrder = async (req, res) => {
-  // ... (Toàn bộ code "Đặt hàng" của bạn ở đây) ...
   try {
     const { shippingInfo, paymentMethod } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.id; // Lấy từ token xác thực
+
+    // 1. Lấy thông tin User và Giỏ hàng
     const user = await User.findById(userId);
     const cart = user.cart;
-    if (cart.length === 0) {
+
+    if (!cart || cart.length === 0) {
       return res
         .status(400)
         .json({ success: false, message: "Giỏ hàng của bạn đang rỗng." });
     }
+
+    // 2. Kiểm tra tồn kho (Stock)
     for (const item of cart) {
       const product = await Product.findById(item.product);
-      if (product.stock < item.quantity) {
+      if (!product) {
         return res
-          .status(400)
-          .json({
-            success: false,
-            message: `Sản phẩm "${product.name}" không đủ hàng.`,
-          });
+          .status(404)
+          .json({ success: false, message: "Sản phẩm không tồn tại." });
+      }
+      if (product.stock < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Sản phẩm "${product.name}" không đủ hàng (chỉ còn ${product.stock}).`,
+        });
       }
     }
+
+    // 3. Tính toán tiền
     const itemsPrice = cart.reduce(
       (acc, item) => acc + item.price * item.quantity,
       0
     );
-    const taxPrice = 0.0;
-    const shippingPrice = 0.0;
+    const taxPrice = 0; // Tùy chỉnh thuế
+    const shippingPrice = 0; // Tùy chỉnh ship
     const totalPrice = itemsPrice + taxPrice + shippingPrice;
+
+    // 4. Tạo đơn hàng mới
     const newOrder = new Order({
       user: userId,
       orderItems: cart,
       shippingInfo: shippingInfo,
-      paymentMethod: paymentMethod,
-      itemsPrice: itemsPrice,
-      taxPrice: taxPrice,
-      shippingPrice: shippingPrice,
-      totalPrice: totalPrice,
+      paymentMethod: paymentMethod, // 'cod' hoặc 'banking'
+      itemsPrice,
+      taxPrice,
+      shippingPrice,
+      totalPrice,
+      // Mặc định là chưa thanh toán
+      isPaid: false,
+      status: "pending",
     });
+
+    // 5. Lưu đơn hàng
     await newOrder.save();
+
+    // 6. Trừ tồn kho (Stock)
     for (const item of cart) {
       await Product.findByIdAndUpdate(item.product, {
         $inc: { stock: -item.quantity },
       });
     }
+
+    // 7. Xóa giỏ hàng của User
     user.cart = [];
     await user.save();
-    res
-      .status(201)
-      .json({ success: true, message: "Đặt hàng thành công!", data: newOrder });
+
+    res.status(201).json({
+      success: true,
+      message: "Đặt hàng thành công!",
+      data: newOrder,
+    });
   } catch (error) {
     console.error("Lỗi khi đặt hàng:", error.message);
     res.status(500).json({ success: false, message: "Đã xảy ra lỗi server." });
   }
 };
 
-// --- HÀM 2: GET MY ORDERS (Bạn đã có) ---
+/**
+ * --- HÀM 2: LẤY ĐƠN HÀNG CỦA TÔI (GET MY ORDERS) ---
+ */
 const getMyOrders = async (req, res) => {
-  // ... (Code lấy đơn hàng của TÔI) ...
   try {
     const userId = req.user.id;
+    // Sắp xếp đơn mới nhất lên đầu
     const orders = await Order.find({ user: userId }).sort({ createdAt: -1 });
     res.status(200).json({ success: true, count: orders.length, data: orders });
   } catch (error) {
-    console.error("Lỗi khi lấy đơn hàng của tôi:", error.message);
-    res.status(500).json({ success: false, message: "Đã xảy ra lỗi server." });
+    console.error("Lỗi lấy đơn hàng của tôi:", error.message);
+    res.status(500).json({ success: false, message: "Lỗi Server" });
   }
 };
 
-// --- HÀM 3: GET ORDER BY ID (Bạn đã có) ---
+/**
+ * --- HÀM 3: LẤY CHI TIẾT 1 ĐƠN HÀNG (GET ORDER BY ID) ---
+ */
 const getOrderById = async (req, res) => {
-  // ... (Code lấy 1 đơn hàng) ...
   try {
     const orderId = req.params.id;
+
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       return res
         .status(400)
         .json({ success: false, message: "ID đơn hàng không hợp lệ." });
     }
+
     const order = await Order.findById(orderId).populate(
       "user",
-      "username email"
+      "username email fullName"
     );
+
     if (!order) {
       return res
         .status(404)
         .json({ success: false, message: "Không tìm thấy đơn hàng." });
     }
+
+    // Kiểm tra quyền: Admin hoặc Chính chủ mới được xem
     if (
-      req.user.role === "admin" ||
-      order.user._id.toString() === req.user.id
+      req.user.role !== "admin" &&
+      order.user._id.toString() !== req.user.id
     ) {
-      res.status(200).json({ success: true, data: order });
-    } else {
       return res
         .status(401)
         .json({ success: false, message: "Không có quyền xem đơn hàng này." });
     }
+
+    res.status(200).json({ success: true, data: order });
   } catch (error) {
-    console.error("Lỗi khi lấy 1 đơn hàng:", error.message);
-    res.status(500).json({ success: false, message: "Đã xảy ra lỗi server." });
+    console.error("Lỗi lấy chi tiết đơn hàng:", error.message);
+    res.status(500).json({ success: false, message: "Lỗi Server" });
   }
 };
 
-// --- HÀM 4: GET ALL ORDERS (ADMIN) (Bạn đã có) ---
+/**
+ * --- HÀM 4: LẤY TẤT CẢ ĐƠN HÀNG (ADMIN ONLY) ---
+ */
 const getAllOrders = async (req, res) => {
-  // ... (Code lấy TẤT CẢ đơn hàng) ...
   try {
     const orders = await Order.find({})
       .populate("user", "username email")
       .sort({ createdAt: -1 });
     res.status(200).json({ success: true, count: orders.length, data: orders });
   } catch (error) {
-    console.error("Lỗi khi lấy tất cả đơn hàng:", error.message);
-    res.status(500).json({ success: false, message: "Đã xảy ra lỗi server." });
+    console.error("Lỗi lấy tất cả đơn hàng:", error.message);
+    res.status(500).json({ success: false, message: "Lỗi Server" });
   }
 };
 
-// --- HÀM 5: UPDATE ORDER STATUS (ADMIN) (Bạn đã có) ---
+/**
+ * --- HÀM 5: CẬP NHẬT TRẠNG THÁI GIAO HÀNG (ADMIN ONLY) ---
+ */
 const updateOrderStatus = async (req, res) => {
-  // ... (Code Admin cập nhật trạng thái) ...
   try {
     const orderId = req.params.id;
     const { status } = req.body;
+
     const validStatuses = [
       "pending",
       "processing",
@@ -140,113 +176,167 @@ const updateOrderStatus = async (req, res) => {
     if (!validStatuses.includes(status)) {
       return res
         .status(400)
-        .json({
-          success: false,
-          message: `Trạng thái "${status}" không hợp lệ.`,
-        });
+        .json({ success: false, message: "Trạng thái không hợp lệ." });
     }
+
     const order = await Order.findById(orderId);
     if (!order) {
       return res
         .status(404)
         .json({ success: false, message: "Không tìm thấy đơn hàng." });
     }
+
     order.status = status;
+
+    // Nếu giao thành công -> cập nhật thời gian deliveredAt
     if (status === "delivered") {
       order.deliveredAt = Date.now();
+      // Nếu là COD và giao thành công -> coi như đã thanh toán
+      if (order.paymentMethod === "cod") {
+        order.isPaid = true;
+        order.paidAt = Date.now();
+      }
     }
+
     await order.save();
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Cập nhật trạng thái đơn hàng thành công!",
-        data: order,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Cập nhật trạng thái thành công!",
+      data: order,
+    });
   } catch (error) {
-    console.error("Lỗi khi cập nhật trạng thái:", error.message);
-    res.status(500).json({ success: false, message: "Đã xảy ra lỗi server." });
+    console.error("Lỗi cập nhật trạng thái:", error.message);
+    res.status(500).json({ success: false, message: "Lỗi Server" });
   }
 };
 
-// --- PHẦN CẬP NHẬT (THÊM 1 HÀM MỚI) ---
-
 /**
- * --- HÀM 6: HỦY ĐƠN HÀNG (USER) ---
- * Logic cho: PUT /api/orders/:id/cancel
- * Quyền truy cập: Private (User)
+ * --- HÀM 6: HỦY ĐƠN HÀNG (USER/ADMIN) ---
+ * Có hoàn lại số lượng tồn kho (Restock)
  */
 const cancelOrder = async (req, res) => {
   try {
-    // 1. "Bảo vệ" protect đã chạy, ta có req.user.id
-    const userId = req.user.id;
-    // 2. Lấy ID đơn hàng từ params
     const orderId = req.params.id;
-
-    // 3. Tìm đơn hàng
+    const userId = req.user.id;
     const order = await Order.findById(orderId);
 
-    // 4. Kiểm tra (Validation)
     if (!order) {
       return res
         .status(404)
         .json({ success: false, message: "Không tìm thấy đơn hàng." });
     }
 
-    // KIỂM TRA QUYỀN SỞ HỮU (Quan trọng!)
-    if (order.user.toString() !== userId) {
+    // Kiểm tra quyền (Chính chủ hoặc Admin)
+    if (req.user.role !== "admin" && order.user.toString() !== userId) {
       return res
         .status(401)
-        .json({
-          success: false,
-          message: "Bạn không có quyền hủy đơn hàng này.",
-        });
+        .json({ success: false, message: "Bạn không có quyền hủy đơn này." });
     }
 
-    // KIỂM TRA TRẠNG THÁI (Quan trọng!)
+    // Chỉ hủy được khi đang chờ xử lý
     if (order.status !== "pending") {
       return res.status(400).json({
         success: false,
-        message: `Đơn hàng đang ở trạng thái "${order.status}", không thể hủy.`,
+        message: "Đơn hàng đã được xử lý, không thể hủy.",
       });
     }
 
-    // 5. Mọi thứ OK -> Hủy đơn hàng
     order.status = "cancelled";
 
-    // 6. HOÀN KHO (Rất quan trọng!)
-    // Trả lại số lượng hàng cho 'stock'
+    // --- HOÀN KHO (RESTOCK) ---
     for (const item of order.orderItems) {
       await Product.findByIdAndUpdate(item.product, {
-        // $inc (increment) với giá trị dương
         $inc: { stock: +item.quantity },
       });
     }
 
-    // 7. Lưu lại
     await order.save();
-
-    // 8. Trả về thành công
     res.status(200).json({
       success: true,
       message: "Hủy đơn hàng thành công!",
       data: order,
     });
   } catch (error) {
-    console.error("Lỗi khi hủy đơn hàng:", error.message);
-    res.status(500).json({
-      success: false,
-      message: "Đã xảy ra lỗi server.",
-    });
+    console.error("Lỗi hủy đơn hàng:", error.message);
+    res.status(500).json({ success: false, message: "Lỗi Server" });
   }
 };
 
-// --- Xuất (Export) CẢ 6 HÀM ra ---
+/**
+ * --- HÀM 7: WEBHOOK XỬ LÝ THANH TOÁN TỰ ĐỘNG (CASSO) ---
+ * Nhận dữ liệu từ Casso khi có biến động số dư
+ */
+const webhookCasso = async (req, res) => {
+  try {
+    // 1. Kiểm tra bảo mật Secure Token
+    const secureToken = req.headers["secure-token"];
+
+    // --- KEY CỦA BẠN ĐÃ ĐƯỢC THAY VÀO ĐÂY ---
+    if (
+      secureToken !==
+      "AK_CS.6512f780d1ab11f0a73fcb966f33aa53.8otAhK6AynQYtIMWRoXXaJMkgAEkbIVmtfbxXSGqYmjVHCs7Cskc8iKOAZMhqGPnPJ9ZAs4r"
+    ) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    // 2. Lấy dữ liệu giao dịch
+    const { data } = req.body;
+
+    if (!data || !Array.isArray(data)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Dữ liệu không hợp lệ" });
+    }
+
+    // 3. Duyệt qua từng giao dịch
+    for (const transaction of data) {
+      const { description, amount, id, when } = transaction;
+
+      // Tìm ID đơn hàng trong nội dung chuyển khoản (Chuỗi 24 ký tự Hex)
+      const orderIdMatch = description.match(/[0-9a-fA-F]{24}/);
+
+      if (orderIdMatch) {
+        const orderId = orderIdMatch[0];
+        const order = await Order.findById(orderId);
+
+        // Chỉ cập nhật nếu đơn chưa thanh toán và số tiền >= tổng tiền đơn
+        if (order && !order.isPaid) {
+          if (amount >= order.totalPrice) {
+            order.isPaid = true;
+            order.paidAt = new Date();
+            order.paymentResult = {
+              id: String(id),
+              status: "completed",
+              update_time: when,
+              method: "vietqr_casso",
+            };
+
+            await order.save();
+            console.log(
+              `[CASSO WEBHOOK] Success: Đơn ${orderId} đã thanh toán.`
+            );
+          } else {
+            console.log(
+              `[CASSO WEBHOOK] Fail: Đơn ${orderId} thiếu tiền. Cần: ${order.totalPrice}, Nhận: ${amount}`
+            );
+          }
+        }
+      }
+    }
+
+    return res.status(200).json({ success: true, message: "Webhook received" });
+  } catch (error) {
+    console.error("Lỗi Webhook Casso:", error.message);
+    return res.status(200).json({ success: true, message: "Error handled" });
+  }
+};
+// --- XUẤT MODULE ---
 module.exports = {
   createOrder,
   getMyOrders,
   getOrderById,
   getAllOrders,
   updateOrderStatus,
-  cancelOrder, // (Hàm mới)
+  cancelOrder,
+  webhookCasso, // Đừng quên xuất hàm này
 };
