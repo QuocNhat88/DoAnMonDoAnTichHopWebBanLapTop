@@ -27,6 +27,9 @@
   },
   "homepage": "https://github.com/QuocNhat88/DoAnMonDoAnTichHop#readme",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@langchain/google-genai": "^2.0.4",
+    "@langchain/mongodb": "^1.0.2",
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",

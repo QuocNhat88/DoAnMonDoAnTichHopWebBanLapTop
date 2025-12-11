@@ -29,50 +29,58 @@ import AdminCategoryForm from "./pages/admin/AdminCategoryForm.jsx";
 import AdminBrandPage from "./pages/admin/AdminBrandPage.jsx";
 import AdminBrandForm from "./pages/admin/AdminBrandForm.jsx";
 
+// --- 1. IMPORT CHAT BUBBLE ---
+import ChatBubble from "./components/Chatbot/ChatBubble.jsx"; // <--- THÊM DÒNG NÀY
+
 function App() {
   return (
-    <Routes>
-      {/* KHU VỰC KHÁCH HÀNG */}
-      <Route path="/" element={<MainLayout />}>
-        <Route index element={<HomePage />} />
-        <Route path="login" element={<LoginPage />} />
-        <Route path="register" element={<RegisterPage />} />
-        <Route path="products/:id" element={<ProductDetailPage />} />
-        <Route path="cart" element={<CartPage />} />
-        <Route path="checkout" element={<CheckoutPage />} />
-        <Route path="my-orders" element={<MyOrdersPage />} />
-        <Route path="order/:id" element={<OrderDetailPage />} />
-        <Route path="profile" element={<ProfilePage />} />
-        <Route path="forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="resetpassword/:token" element={<ResetPasswordPage />} />
-      </Route>
+    // --- 2. THÊM THẺ FRAGMENT (<>...</>) ĐỂ BỌC TOÀN BỘ ---
+    <>
+      <ChatBubble />{" "}
+      {/* <--- THÊM DÒNG NÀY (Để nút chat hiển thị đè lên mọi trang) */}
+      <Routes>
+        {/* KHU VỰC KHÁCH HÀNG */}
+        <Route path="/" element={<MainLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
+          <Route path="products/:id" element={<ProductDetailPage />} />
+          <Route path="cart" element={<CartPage />} />
+          <Route path="checkout" element={<CheckoutPage />} />
+          <Route path="my-orders" element={<MyOrdersPage />} />
+          <Route path="order/:id" element={<OrderDetailPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="resetpassword/:token" element={<ResetPasswordPage />} />
+        </Route>
 
-      {/* KHU VỰC ADMIN */}
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<DashboardPage />} />
-        <Route path="dashboard" element={<DashboardPage />} />
+        {/* KHU VỰC ADMIN */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="dashboard" element={<DashboardPage />} />
 
-        {/* Quản lý sản phẩm */}
-        <Route path="products" element={<AdminProductPage />} />
-        <Route path="products/add" element={<AdminProductForm />} />
-        <Route path="products/edit/:id" element={<AdminProductForm />} />
+          {/* Quản lý sản phẩm */}
+          <Route path="products" element={<AdminProductPage />} />
+          <Route path="products/add" element={<AdminProductForm />} />
+          <Route path="products/edit/:id" element={<AdminProductForm />} />
 
-        {/* Quản lý đơn hàng */}
-        <Route path="orders" element={<AdminOrderPage />} />
+          {/* Quản lý đơn hàng */}
+          <Route path="orders" element={<AdminOrderPage />} />
 
-        <Route path="users" element={<AdminUserPage />} />
+          <Route path="users" element={<AdminUserPage />} />
 
-        {/* Route Danh mục */}
-        <Route path="categories" element={<AdminCategoryPage />} />
-        <Route path="categories/add" element={<AdminCategoryForm />} />
-        <Route path="categories/edit/:id" element={<AdminCategoryForm />} />
+          {/* Route Danh mục */}
+          <Route path="categories" element={<AdminCategoryPage />} />
+          <Route path="categories/add" element={<AdminCategoryForm />} />
+          <Route path="categories/edit/:id" element={<AdminCategoryForm />} />
 
-        {/* Route Thương hiệu */}
-        <Route path="brands" element={<AdminBrandPage />} />
-        <Route path="brands/add" element={<AdminBrandForm />} />
-        <Route path="brands/edit/:id" element={<AdminBrandForm />} />
-      </Route>
-    </Routes>
+          {/* Route Thương hiệu */}
+          <Route path="brands" element={<AdminBrandPage />} />
+          <Route path="brands/add" element={<AdminBrandForm />} />
+          <Route path="brands/edit/:id" element={<AdminBrandForm />} />
+        </Route>
+      </Routes>
+    </>
   );
 }
 

@@ -88,6 +88,12 @@ const ProductSchema = new Schema(
       type: Number,
       default: 0,
     },
+    embedding: {
+      type: [Number], // Mảng chứa các số thực
+      required: false, // Dữ liệu cũ không có cũng không sao
+      select: false, // QUAN TRỌNG: Mặc định ẩn đi để không làm nặng web
+      index: true, // Hỗ trợ đánh index (tùy chọn)
+    },
     // (Bạn có thể tạo Model 'Review' riêng nếu muốn làm chi tiết)
   },
   {
