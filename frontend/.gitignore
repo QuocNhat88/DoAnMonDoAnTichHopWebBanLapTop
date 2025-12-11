@@ -7,9 +7,16 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Không đẩy node_modules lên Git
+node_modules/
+
+# Build files
+dist/
+dist-ssr/
+
+# Env file
+.env
+*.env
 *.local
 
 # Editor directories and files
