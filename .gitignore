@@ -1,0 +1,24 @@
+# Không upload node_modules
+node_modules/
+*/node_modules/
+
+# Không upload env
+.env
+*.env
+*/.env
+
+# Logs
+*.log
+
+# Build
+dist/
+build/
+dist-ssr/
+
+# Editor
+.vscode/
+.idea/
+
+# System
+.DS_Store
+Thumbs.db
