@@ -268,17 +268,16 @@ const cancelOrder = async (req, res) => {
  */
 const webhookCasso = async (req, res) => {
   try {
+    console.log(">>> WEBHOOK CASSO ĐÃ ĐƯỢC GỌI <<<");
+    console.log("Headers:", req.headers);
     // 1. Kiểm tra bảo mật Secure Token
     const secureToken = req.headers["secure-token"];
-
-    // --- KEY CỦA BẠN ĐÃ ĐƯỢC THAY VÀO ĐÂY ---
     if (
       secureToken !==
       "AK_CS.6512f780d1ab11f0a73fcb966f33aa53.8otAhK6AynQYtIMWRoXXaJMkgAEkbIVmtfbxXSGqYmjVHCs7Cskc8iKOAZMhqGPnPJ9ZAs4r"
     ) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-
     // 2. Lấy dữ liệu giao dịch
     const { data } = req.body;
 
