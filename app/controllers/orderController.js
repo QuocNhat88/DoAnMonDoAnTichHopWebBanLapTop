@@ -268,64 +268,104 @@ const cancelOrder = async (req, res) => {
  */
 const webhookCasso = async (req, res) => {
   try {
-    console.log(">>> WEBHOOK CASSO ĐÃ ĐƯỢC GỌI <<<");
-    console.log("Headers:", req.headers);
-    // 1. Kiểm tra bảo mật Secure Token
+    console.log("\n=== WEBHOOK CASSO RECEIVED ===");
+    console.log("⏰ Time:", new Date().toISOString());
+    console.log("📋 Headers:", JSON.stringify(req.headers, null, 2));
+    console.log("📦 Body:", JSON.stringify(req.body, null, 2));
+    console.log("================================\n");
+
+    // 1. Kiểm tra Secure Token
     const secureToken = req.headers["secure-token"];
-    if (
-      secureToken !==
-      "AK_CS.6512f780d1ab11f0a73fcb966f33aa53.8otAhK6AynQYtIMWRoXXaJMkgAEkbIVmtfbxXSGqYmjVHCs7Cskc8iKOAZMhqGPnPJ9ZAs4r"
-    ) {
+    const expectedToken =
+      "AK_CS.6512f780d1ab11f0a73fcb966f33aa53.8otAhK6AynQYtIMWRoXXaJMkgAEkbIVmtfbxXSGqYmjVHCs7Cskc8iKOAZMhqGPnPJ9ZAs4r";
+
+    if (secureToken !== expectedToken) {
+      console.log("❌ Token không khớp!");
+      console.log("Nhận được:", secureToken);
+      console.log("Mong đợi:", expectedToken);
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    // 2. Lấy dữ liệu giao dịch
+
+    console.log("✅ Token hợp lệ");
+
+    // 2. Kiểm tra dữ liệu
     const { data } = req.body;
 
     if (!data || !Array.isArray(data)) {
+      console.log("❌ Dữ liệu không hợp lệ hoặc không phải array");
       return res
         .status(400)
         .json({ success: false, message: "Dữ liệu không hợp lệ" });
     }
 
-    // 3. Duyệt qua từng giao dịch
-    for (const transaction of data) {
+    console.log(`📊 Số lượng giao dịch: ${data.length}`);
+
+    // 3. Xử lý từng giao dịch
+    for (let i = 0; i < data.length; i++) {
+      const transaction = data[i];
+      console.log(`\n--- Giao dịch ${i + 1}/${data.length} ---`);
+      console.log("ID:", transaction.id);
+      console.log("Số tiền:", transaction.amount);
+      console.log("Nội dung:", transaction.description);
+      console.log("Thời gian:", transaction.when);
+
       const { description, amount, id, when } = transaction;
 
-      // Tìm ID đơn hàng trong nội dung chuyển khoản (Chuỗi 24 ký tự Hex)
+      // Tìm Order ID (chuỗi 24 ký tự hex)
       const orderIdMatch = description.match(/[0-9a-fA-F]{24}/);
 
-      if (orderIdMatch) {
-        const orderId = orderIdMatch[0];
-        const order = await Order.findById(orderId);
+      if (!orderIdMatch) {
+        console.log("⚠️ Không tìm thấy Order ID trong nội dung");
+        continue;
+      }
 
-        // Chỉ cập nhật nếu đơn chưa thanh toán và số tiền >= tổng tiền đơn
-        if (order && !order.isPaid) {
-          if (amount >= order.totalPrice) {
-            order.isPaid = true;
-            order.paidAt = new Date();
-            order.paymentResult = {
-              id: String(id),
-              status: "completed",
-              update_time: when,
-              method: "vietqr_casso",
-            };
+      const orderId = orderIdMatch[0];
+      console.log("🔍 Tìm thấy Order ID:", orderId);
 
-            await order.save();
-            console.log(
-              `[CASSO WEBHOOK] Success: Đơn ${orderId} đã thanh toán.`
-            );
-          } else {
-            console.log(
-              `[CASSO WEBHOOK] Fail: Đơn ${orderId} thiếu tiền. Cần: ${order.totalPrice}, Nhận: ${amount}`
-            );
-          }
-        }
+      const order = await Order.findById(orderId);
+
+      if (!order) {
+        console.log("❌ Không tìm thấy đơn hàng trong database");
+        continue;
+      }
+
+      console.log("✅ Đơn hàng tồn tại:");
+      console.log("  - Tổng tiền đơn:", order.totalPrice);
+      console.log("  - Đã thanh toán:", order.isPaid);
+      console.log("  - Số tiền nhận:", amount);
+
+      if (order.isPaid) {
+        console.log("ℹ️ Đơn hàng đã thanh toán trước đó, bỏ qua");
+        continue;
+      }
+
+      if (amount >= order.totalPrice) {
+        console.log("💰 Số tiền hợp lệ, đang cập nhật đơn hàng...");
+
+        order.isPaid = true;
+        order.paidAt = new Date(when);
+        order.paymentResult = {
+          id: String(id),
+          status: "completed",
+          update_time: when,
+          method: "vietqr_casso",
+        };
+
+        await order.save();
+        console.log("✅ Cập nhật đơn hàng thành công!");
+      } else {
+        console.log("⚠️ Số tiền không đủ:");
+        console.log(`   Cần: ${order.totalPrice}, Nhận: ${amount}`);
       }
     }
 
+    console.log("\n=== KẾT THÚC XỬ LÝ WEBHOOK ===\n");
     return res.status(200).json({ success: true, message: "Webhook received" });
   } catch (error) {
-    console.error("Lỗi Webhook Casso:", error.message);
+    console.error("\n❌❌❌ LỖI WEBHOOK ❌❌❌");
+    console.error("Message:", error.message);
+    console.error("Stack:", error.stack);
+    console.error("============================\n");
     return res.status(200).json({ success: true, message: "Error handled" });
   }
 };
