@@ -8,9 +8,9 @@ function OrderDetailPage() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // --- CẤU HÌNH TÀI KHOẢN NGÂN HÀNG (Thay bằng thông tin của bạn) ---
-  const BANK_ID = "MB";
-  const ACCOUNT_NO = "11226666888999";
+  // --- CẤU HÌNH TÀI KHOẢN NGÂN HÀNG
+  const BANK_ID = "BIDV";
+  const ACCOUNT_NO = "V3CASSBANHANG882004";
   const ACCOUNT_NAME = "NGUYEN VAN QUOC NHAT";
   const TEMPLATE = "compact"; // compact, print, qr_only
 
@@ -53,7 +53,7 @@ function OrderDetailPage() {
         } catch (error) {
           console.error("Lỗi polling:", error);
         }
-      }, 3000); // 3000ms = 3 giây
+      }, 15000); // 3000ms = 3 giây
     }
 
     // Dọn dẹp interval khi rời trang hoặc đơn hàng đã cập nhật xong

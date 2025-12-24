@@ -27,8 +27,8 @@ function CheckoutPage() {
 
   // --- CẤU HÌNH TÀI KHOẢN NGÂN HÀNG (SỬA LẠI CHO ĐÚNG CỦA BẠN) ---
   const BANK_INFO = {
-    BANK_ID: "MB", // Mã ngân hàng (MB, VCB, ACB, VPB, TPB,...)
-    ACCOUNT_NO: "11226666888999", // Số tài khoản nhận tiền
+    BANK_ID: "BIDV", // Mã ngân hàng (MB, VCB, ACB, VPB, TPB,...)
+    ACCOUNT_NO: "V3CASSBANHANG882004", // Số tài khoản nhận tiền
     TEMPLATE: "compact", // Kiểu QR
     ACCOUNT_NAME: "NGUYEN VAN QUOC NHAT", // Tên chủ tài khoản
   };

@@ -276,8 +276,7 @@ const webhookCasso = async (req, res) => {
 
     // 1. Kiểm tra Secure Token
     const secureToken = req.headers["secure-token"];
-    const expectedToken =
-      "AK_CS.6512f780d1ab11f0a73fcb966f33aa53.8otAhK6AynQYtIMWRoXXaJMkgAEkbIVmtfbxXSGqYmjVHCs7Cskc8iKOAZMhqGPnPJ9ZAs4r";
+    const expectedToken = process.env.CASSO_SECURE_TOKEN;
 
     if (secureToken !== expectedToken) {
       console.log("❌ Token không khớp!");

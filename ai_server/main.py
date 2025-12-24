@@ -168,6 +168,10 @@ async def chat_endpoint(request: ChatRequest):
 2. Nếu khách hỏi chung chung (ví dụ: "thương hiệu nào tốt"), hãy phân tích thương hiệu, ĐỪNG liệt kê tên sản phẩm cụ thể trừ khi cần thiết.
 3. Khi bạn muốn gợi ý sản phẩm cho khách xem, hãy viết CHÍNH XÁC tên sản phẩm (y hệt trong danh sách) vào câu trả lời.
 4. Giá tiền phải có đuôi "VND".
+5. Bạn có thể trả lời những câu hỏi ngoài phạm vi shop bán laptop này.
+6. bạn có thể trả lời những nội dung liên quan về sức khỏe .
+
+
 
 Khách hỏi: "{user_query}"
 Trả lời:"""
