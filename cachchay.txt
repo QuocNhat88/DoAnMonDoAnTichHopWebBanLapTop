@@ -1,2 +1,12 @@
-python 
-uvicorn main:app --reload --port 8000
+clone về thì tạo 1 file là .env rồi vô zalo lấy nội dung dán vô file
+
+frontend : tạo một terminal mới -> gõ 'cd frontend' khi nó đang 
+ở thư mục frontend thì gõ 'npm install' xong gõ 'npm run dev' để chạy frontend
+
+backend : tạo một terminal mới và gõ 'npm install' rồi gõ 'npm start' để chạy backend
+
+BoxchatAI : tạo một terminal mới gõ 'cd ai_server' rồi gõ 'uvicorn main:app --reload --port 8000'
+
+
+
+
