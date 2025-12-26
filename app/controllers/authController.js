@@ -224,7 +224,7 @@ const forgotPassword = async (req, res) => {
     console.log("🔑 COPY TOKEN NÀY:", resetToken);
     console.log("======================================");
 
-    // Tạo link (Nhớ sửa cổng thành 5173 nhé)
+    // Tạo link
     const resetUrl = `${
       process.env.FRONTEND_URL || "http://localhost:5173"
     }/resetpassword/${resetToken}`;
@@ -238,11 +238,11 @@ const forgotPassword = async (req, res) => {
         message: message,
       });
 
-      console.log("4. Đã gửi email thành công (giả lập)");
+      console.log("4. Đã gửi email thành công ");
 
       res.status(200).json({
         success: true,
-        message: "Đã gửi email (hoặc hãy xem Console Backend để lấy Token).",
+        message: "Đã gửi email .",
       });
     } catch (error) {
       user.resetPasswordToken = undefined;
