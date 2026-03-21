@@ -6,11 +6,8 @@ const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
 
 /**
- * --- HÀM 1: ĐĂNG KÝ (REGISTER) ---
- * (Hàm này bạn đã có - KHÔNG THAY ĐỔI)
- */
+ * --- HÀM 1: ĐĂNG KÝ (REGISTER) ---*/
 const register = async (req, res) => {
-  // ... (Toàn bộ code "Đăng ký" của bạn)
   try {
     const { username, email, password } = req.body;
     const existingUser = await User.findOne({
@@ -49,11 +46,8 @@ const register = async (req, res) => {
 };
 
 /**
- * --- HÀM 2: ĐĂNG NHẬP (LOGIN) ---
- * (Hàm này bạn đã có - KHÔNG THAY ĐỔI)
- */
+ * --- HÀM 2: ĐĂNG NHẬP (LOGIN) ---*/
 const login = async (req, res) => {
-  // ... (Toàn bộ code "Đăng nhập" của bạn)
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email: email });
@@ -88,11 +82,8 @@ const login = async (req, res) => {
 };
 
 /**
- * --- HÀM 3: LẤY THÔNG TIN CÁ NHÂN (GET ME) ---
- * (Hàm này bạn đã có - KHÔNG THAY ĐỔI)
- */
+ * --- HÀM 3: LẤY THÔNG TIN CÁ NHÂN (GET ME) ---*/
 const getMe = async (req, res) => {
-  // ... (Toàn bộ code "Lấy thông tin cá nhân" của bạn)
   try {
     res.status(200).json({
       success: true,
@@ -104,13 +95,7 @@ const getMe = async (req, res) => {
   }
 };
 
-// --- PHẦN CẬP NHẬT (THÊM 1 HÀM MỚI) ---
-
-/**
- * --- HÀM 6: CẬP NHẬT THÔNG TIN CÁ NHÂN (UPDATE PROFILE) ---
- * Logic cho: PUT /api/auth/profile
- * Quyền truy cập: Private (User)
- */
+// cập nhật thông tin cá nhân (update profile)
 const updateUserProfile = async (req, res) => {
   try {
     // 1. "Bảo vệ" protect đã chạy, ta có req.user.id
@@ -120,8 +105,7 @@ const updateUserProfile = async (req, res) => {
     // 2. Lấy thông tin cần cập nhật từ body
     const { fullName, address, phoneNumber } = req.body;
 
-    // 3. Tìm user trong DB (Mặc dù 'protect' đã tìm,
-    //    nhưng chúng ta cần tìm lại để có thể .save())
+    // 3. Tìm user trong DB (Mặc dù 'protect' đã tìm, nhưng cần tìm lại để có thể .save())
     const user = await User.findById(userId);
 
     if (!user) {
@@ -131,19 +115,11 @@ const updateUserProfile = async (req, res) => {
     }
 
     // 4. Cập nhật các trường
-    //    Chúng ta dùng (user.field = ... || user.field)
-    //    để nếu người dùng không gửi 'fullName',
-    //    nó sẽ tự giữ lại 'fullName' cũ.
     user.fullName = fullName || user.fullName;
     user.address = address || user.address;
     user.phoneNumber = phoneNumber || user.phoneNumber;
-
-    // (Lưu ý: Chúng ta KHÔNG cho phép sửa 'email', 'username'
-    //  hay 'password' ở đây. Đó là các chức năng riêng biệt)
-
     // 5. Lưu lại thông tin user đã cập nhật
     const updatedUser = await user.save();
-
     // 6. Trả về user mới (trừ password)
     res.status(200).json({
       success: true,
@@ -180,8 +156,6 @@ const updateUserProfile = async (req, res) => {
  * 3. Lưu token vào database (có thời hạn 10 phút)
  * 4. Gửi email chứa link reset password
  */
-// backend/controllers/authController.js
-
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -436,5 +410,5 @@ module.exports = {
   updateUserProfile,
   forgotPassword,
   resetPassword,
-  changePassword, // ← Thêm dòng này
+  changePassword,
 };

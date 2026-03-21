@@ -1,5 +1,5 @@
 // Dòng 1: Nạp các biến môi trường từ tệp .env
-require("dotenv").config();
+require("dotenv").config({ path: "../.env" });
 
 const express = require("express");
 const app = express();
@@ -9,7 +9,7 @@ const cors = require("cors");
 const port = process.env.PORT || 3000;
 
 // Import module kết nối cơ sở dữ liệu
-const db = require("./app/config/db");
+const db = require("./config/db");
 // Gọi hàm connect() để thực hiện kết nối
 db.connect();
 
@@ -28,7 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 // --- PHẦN CODE CẬP NHẬT ---
 
 // 1. Import "tổng đài" route (tệp app/routes/index.js)
-const masterRouter = require("./app/routes");
+const masterRouter = require("./routes");
 
 // 2. Bảo Express sử dụng "tổng đài" này
 //    (Tất cả các route của bạn sẽ bắt đầu từ đây)

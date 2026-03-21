@@ -28,7 +28,7 @@ function CheckoutPage() {
   // --- CẤU HÌNH TÀI KHOẢN NGÂN HÀNG (SỬA LẠI CHO ĐÚNG CỦA BẠN) ---
   const BANK_INFO = {
     BANK_ID: "BIDV", // Mã ngân hàng (MB, VCB, ACB, VPB, TPB,...)
-    ACCOUNT_NO: "V3CASSBANHANG882004", // Số tài khoản nhận tiền
+    ACCOUNT_NO: "V3CASSLAPTOPDEPTRAI", // Số tài khoản nhận tiền
     TEMPLATE: "compact", // Kiểu QR
     ACCOUNT_NAME: "NGUYEN VAN QUOC NHAT", // Tên chủ tài khoản
   };
@@ -93,7 +93,7 @@ function CheckoutPage() {
   const calculateTotal = () => {
     return cartItems.reduce(
       (total, item) => total + item.price * item.quantity,
-      0
+      0,
     );
   };
 
@@ -357,7 +357,7 @@ function CheckoutPage() {
               {isProcessing
                 ? "Đang xử lý..."
                 : `ĐẶT HÀNG NGAY (${calculateTotal().toLocaleString(
-                    "vi-VN"
+                    "vi-VN",
                   )} đ)`}
             </button>
           </form>

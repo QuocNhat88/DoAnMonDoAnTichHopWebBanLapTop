@@ -10,7 +10,7 @@ function OrderDetailPage() {
 
   // --- CẤU HÌNH TÀI KHOẢN NGÂN HÀNG
   const BANK_ID = "BIDV";
-  const ACCOUNT_NO = "V3CASSBANHANG882004";
+  const ACCOUNT_NO = "V3CASSLAPTOPDEPTRAI";
   const ACCOUNT_NAME = "NGUYEN VAN QUOC NHAT";
   const TEMPLATE = "compact"; // compact, print, qr_only
 
@@ -53,7 +53,7 @@ function OrderDetailPage() {
         } catch (error) {
           console.error("Lỗi polling:", error);
         }
-      }, 15000); // 3000ms = 3 giây
+      }, 15000);
     }
 
     // Dọn dẹp interval khi rời trang hoặc đơn hàng đã cập nhật xong
@@ -114,19 +114,19 @@ function OrderDetailPage() {
                   order.status === "pending"
                     ? "bg-yellow-100 text-yellow-800"
                     : order.status === "cancelled"
-                    ? "bg-red-100 text-red-800"
-                    : order.status === "delivered"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-blue-100 text-blue-800"
+                      ? "bg-red-100 text-red-800"
+                      : order.status === "delivered"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-blue-100 text-blue-800"
                 }`}
             >
               {order.status === "pending"
                 ? "Chờ xử lý"
                 : order.status === "cancelled"
-                ? "Đã hủy"
-                : order.status === "delivered"
-                ? "Giao thành công"
-                : order.status}
+                  ? "Đã hủy"
+                  : order.status === "delivered"
+                    ? "Giao thành công"
+                    : order.status}
             </span>
 
             {/* Trạng thái thanh toán */}

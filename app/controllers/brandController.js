@@ -51,7 +51,6 @@ const createBrand = async (req, res) => {
     const newBrand = new Brand({
       name: name,
       description: description,
-      // (logoUrl có thể thêm sau)
     });
 
     // 4. Lưu vào DB

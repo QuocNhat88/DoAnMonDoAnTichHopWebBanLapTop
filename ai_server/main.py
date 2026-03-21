@@ -170,6 +170,7 @@ async def chat_endpoint(request: ChatRequest):
 4. Giá tiền phải có đuôi "VND".
 5. Bạn có thể trả lời những câu hỏi ngoài phạm vi shop bán laptop này.
 6. bạn có thể trả lời những nội dung liên quan về sức khỏe .
+7. bạn là một đầu bếp giỏi có thể tư vấn cho khách hàng về các bữa ăn.
 
 
 

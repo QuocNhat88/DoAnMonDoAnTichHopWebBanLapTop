@@ -25,13 +25,9 @@ const CategorySchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-/**
- * Tạo Model từ Schema
- * Mongoose sẽ tự động tìm bộ sưu tập 'categories' (viết thường, số nhiều)
- */
 const Category = mongoose.model("Category", CategorySchema);
 
 module.exports = Category;

@@ -71,7 +71,7 @@ const addToCart = async (req, res) => {
     const user = await User.findById(userId);
 
     const itemIndex = user.cart.findIndex(
-      (item) => item.product.toString() === productId
+      (item) => item.product.toString() === productId,
     );
 
     if (itemIndex > -1) {
@@ -100,7 +100,7 @@ const addToCart = async (req, res) => {
 
     const populatedUser = await User.findById(userId).populate(
       "cart.product",
-      "name price thumbnail stock"
+      "name price thumbnail stock",
     );
 
     res.status(200).json({
@@ -127,9 +127,6 @@ const updateCartItemQuantity = async (req, res) => {
     const userId = req.user.id;
 
     if (newQuantity <= 0) {
-      // Nếu số lượng mới là 0, gọi "Xóa"
-      // (Chúng ta sẽ "mượn" logic của hàm 'removeCartItem'
-      //  bằng cách giả lập req, res)
       const mockReq = { params: { productId }, user: { id: userId } };
       const mockRes = {
         status: (code) => ({
@@ -148,7 +145,7 @@ const updateCartItemQuantity = async (req, res) => {
 
     const user = await User.findById(userId);
     const itemIndex = user.cart.findIndex(
-      (item) => item.product.toString() === productId
+      (item) => item.product.toString() === productId,
     );
 
     if (itemIndex > -1) {
@@ -162,22 +159,18 @@ const updateCartItemQuantity = async (req, res) => {
 
       const populatedUser = await User.findById(userId).populate(
         "cart.product",
-        "name price thumbnail stock"
+        "name price thumbnail stock",
       );
-      res
-        .status(200)
-        .json({
-          success: true,
-          message: "Cập nhật số lượng thành công",
-          data: populatedUser.cart,
-        });
+      res.status(200).json({
+        success: true,
+        message: "Cập nhật số lượng thành công",
+        data: populatedUser.cart,
+      });
     } else {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "Không tìm thấy sản phẩm trong giỏ.",
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy sản phẩm trong giỏ.",
+      });
     }
   } catch (error) {
     console.error("Lỗi khi cập nhật giỏ hàng:", error.message);
@@ -196,7 +189,7 @@ const removeCartItem = async (req, res) => {
 
     const user = await User.findById(userId);
     const itemIndex = user.cart.findIndex(
-      (item) => item.product.toString() === productId
+      (item) => item.product.toString() === productId,
     );
 
     if (itemIndex > -1) {
@@ -205,22 +198,18 @@ const removeCartItem = async (req, res) => {
 
       const populatedUser = await User.findById(userId).populate(
         "cart.product",
-        "name price thumbnail stock"
+        "name price thumbnail stock",
       );
-      res
-        .status(200)
-        .json({
-          success: true,
-          message: "Đã xóa sản phẩm khỏi giỏ hàng",
-          data: populatedUser.cart,
-        });
+      res.status(200).json({
+        success: true,
+        message: "Đã xóa sản phẩm khỏi giỏ hàng",
+        data: populatedUser.cart,
+      });
     } else {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "Không tìm thấy sản phẩm trong giỏ.",
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy sản phẩm trong giỏ.",
+      });
     }
   } catch (error) {
     console.error("Lỗi khi xóa khỏi giỏ hàng:", error.message);
@@ -228,7 +217,6 @@ const removeCartItem = async (req, res) => {
   }
 };
 
-// --- Xuất (Export) CẢ 4 HÀM ra ---
 module.exports = {
   getMyCart,
   addToCart,

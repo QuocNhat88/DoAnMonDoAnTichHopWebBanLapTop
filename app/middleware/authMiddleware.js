@@ -24,14 +24,9 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
 
       // 3. Xác thực (Verify) Token
-      // Dùng "khóa bí mật" (.env) để giải mã token
       const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
       // 4. Nếu giải mã thành công, "decoded" sẽ chứa payload
-      //    (mà chúng ta đã gói ở hàm login: { user: { id, role } })
-      // Tìm user trong DB bằng ID từ token
-      // GÁN user (trừ password) vào đối tượng req
-      // 'req.user' SẼ ĐƯỢC DÙNG Ở TẤT CẢ CÁC BƯỚC SAU (CONTROLLER)
       req.user = await User.findById(decoded.user.id).select("-password");
 
       // 5. Nếu tìm thấy user, gọi "next()"

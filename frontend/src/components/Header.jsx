@@ -59,7 +59,7 @@ function Header() {
             to="/cart"
             className="flex items-center text-gray-700 hover:text-blue-600 relative"
           >
-            <span className="text-2xl mr-1">🛒</span>
+            <span className="text-2xl mr-1"> </span>
             {totalItems > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                 {totalItems}
@@ -83,7 +83,7 @@ function Header() {
                     to="/admin/products"
                     className="text-sm font-bold text-red-600 hover:underline flex items-center gap-1 border border-red-600 px-2 py-1 rounded"
                   >
-                    ⚙️ Quản lý
+                    Quản lý
                   </Link>
                   <span className="text-gray-300">|</span>
                 </>

@@ -2,14 +2,12 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: "http://localhost:3000/api", // (Đảm bảo đúng cổng backend của bạn)
+  baseURL: "http://localhost:3000/api",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// --- PHẦN MỚI THÊM VÀO ---
-// Trước khi gửi request đi, hãy làm việc này:
 axiosClient.interceptors.request.use(async (config) => {
   // Lấy token từ localStorage
   const token = localStorage.getItem("token");
@@ -32,7 +30,7 @@ axiosClient.interceptors.response.use(
   },
   (error) => {
     throw error;
-  }
+  },
 );
 
 export default axiosClient;

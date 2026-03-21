@@ -41,7 +41,7 @@ function AdminLayout() {
               "dashboard"
             )}`}
           >
-            📊 Tổng quan
+            Tổng quan
           </Link>
 
           {/* Link Sản phẩm (ĐANG LÀM) */}
@@ -51,7 +51,7 @@ function AdminLayout() {
               "products"
             )}`}
           >
-            💻 Quản lý Sản phẩm
+            Quản lý Sản phẩm
           </Link>
 
           {/* Link Đơn hàng */}
@@ -61,7 +61,7 @@ function AdminLayout() {
               "orders"
             )}`}
           >
-            📦 Quản lý Đơn hàng
+            Quản lý Đơn hàng
           </Link>
 
           {/* Link Người dùng */}
@@ -71,7 +71,7 @@ function AdminLayout() {
               "users"
             )}`}
           >
-            👥 Quản lý User
+            Quản lý User
           </Link>
           <Link
             to="/admin/categories"
@@ -79,7 +79,7 @@ function AdminLayout() {
               "categories"
             )}`}
           >
-            📂 Quản lý Danh mục
+            Quản lý Danh mục
           </Link>
           <Link
             to="/admin/brands"
@@ -87,7 +87,7 @@ function AdminLayout() {
               "brands"
             )}`}
           >
-            🏷️ Quản lý Thương hiệu
+            Quản lý Thương hiệu
           </Link>
         </nav>
 
