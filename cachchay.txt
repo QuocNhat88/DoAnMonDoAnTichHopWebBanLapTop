@@ -5,7 +5,7 @@ frontend : tạo một terminal mới -> gõ 'cd frontend' khi nó đang
 
 backend : tạo một terminal mới và gõ 'npm install' rồi gõ 'npm start' để chạy backend
 
-BoxchatAI : tạo một terminal mới gõ 'cd ai_server' rồi gõ 'uvicorn main:app --reload --port 8000'
+BoxchatAI : tạo một terminal mới gõ 'cd ai_server' rồi gõ 'source .venv/Scripts/activate && cd ai_server && uvicorn main:app --reload'
 
 
 

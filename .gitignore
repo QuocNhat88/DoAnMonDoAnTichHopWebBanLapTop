@@ -1,24 +1,39 @@
-# Không upload node_modules
+# Node modules
 node_modules/
 */node_modules/
 
-# Không upload env
+# Environment variables 
 .env
+.env.*
 *.env
 */.env
 
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
 # Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Build
 dist/
 build/
 dist-ssr/
 
-# Editor
+# IDE / Editor
 .vscode/
 .idea/
 
-# System
+# OS
 .DS_Store
 Thumbs.db
+
+# FAISS index ( save vector DB)
+faiss_index/
+*.faiss
+*.pkl

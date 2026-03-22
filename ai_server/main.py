@@ -4,7 +4,11 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
+
+# --- IMPORT THÊM THƯ VIỆN RAG ---
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_core.documents import Document
 
 # 1. Load .env
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -37,13 +41,18 @@ SHOP_INFO = """
 - Vận chuyển: Miễn phí nội thành Đà Nẵng.
 """
 
-# Biến toàn cục
-PRODUCT_CONTEXT = ""     
+# Biến toàn cục mới
+VECTOR_DB = None # Thay thế cho PRODUCT_CONTEXT cũ
 PRODUCT_LIST_RAW = []    
 MARKET_INSIGHTS = ""     
 
+# Khởi tạo mô hình Embedding của Google
+embeddings = GoogleGenerativeAIEmbeddings(
+    model="models/gemini-embedding-001", 
+    google_api_key=GOOGLE_API_KEY
+)
+
 def get_market_insights(db):
-    """Phân tích hàng bán chạy (Best Sellers)"""
     print("📊 Đang phân tích xu hướng bán hàng...")
     try:
         pipeline = [
@@ -57,11 +66,9 @@ def get_market_insights(db):
             { "$sort": { "totalSold": -1 } },
             { "$limit": 5 } 
         ]
-        
         top_products = list(db.orders.aggregate(pipeline))
-        
         if not top_products:
-            return "" # Trả về rỗng nếu không có dữ liệu
+            return "" 
 
         insight_text = "\n🔥 TOP SẢN PHẨM BÁN CHẠY (Ưu tiên tư vấn):\n"
         prod_map = {str(p["_id"]): p["name"] for p in list(db.products.find())}
@@ -69,19 +76,16 @@ def get_market_insights(db):
         for index, item in enumerate(top_products):
             pid = str(item["_id"])
             pname = prod_map.get(pid, "Sản phẩm")
-            # Lọc bỏ sản phẩm rác nếu cần (ví dụ tên quá ngắn)
             if len(pname) > 3: 
                 insight_text += f"- {pname}\n"
-            
         return insight_text
-    
     except Exception as e:
         print(f"⚠️ Lỗi phân tích đơn hàng: {e}")
         return ""
 
 def load_data_from_mongo():
-    global PRODUCT_CONTEXT, PRODUCT_LIST_RAW, MARKET_INSIGHTS
-    print("⏳ Đang đọc dữ liệu từ MongoDB...")
+    global VECTOR_DB, PRODUCT_LIST_RAW, MARKET_INSIGHTS
+    print("⏳ Đang đọc dữ liệu từ MongoDB và tạo Vector Database...")
     
     client = pymongo.MongoClient(MONGO_URI)
     try:
@@ -102,27 +106,35 @@ def load_data_from_mongo():
         products = list(db.products.aggregate(pipeline))
         PRODUCT_LIST_RAW = products
         
-        context_text = ""
+        docs = []
         for prod in products:
-            brand = prod.get('brand_info', {}).get('name', 'Khác')
-            cat = prod.get('category_info', {}).get('name', 'Khác')
-            specs = prod.get("specifications", {})
-            
-            # Chỉ nạp sản phẩm có giá > 0 vào ngữ cảnh để tránh rác
             if prod['price'] > 0:
-                context_text += f"""
-                - Tên: {prod['name']}
-                - ID: {prod['_id']}
-                - Hãng: {brand} | Loại: {cat}
-                - Giá: {prod['price']} VND
-                - CPU: {specs.get('cpu', '')}, RAM: {specs.get('ram', '')}, VGA: {specs.get('gpu', '')}
-                ------------------------------------------
-                """
-        PRODUCT_CONTEXT = context_text
-        print(f"✅ Đã nạp {len(products)} sản phẩm.")
+                brand = prod.get('brand_info', {}).get('name', 'Khác')
+                cat = prod.get('category_info', {}).get('name', 'Khác')
+                specs = prod.get("specifications", {})
+                
+                # Gom dữ liệu thành 1 đoạn văn bản để tạo Vector
+                text_content = f"Tên laptop: {prod['name']}. Hãng sản xuất: {brand}. Loại: {cat}. Giá bán: {prod['price']} VND. Cấu hình CPU: {specs.get('cpu', '')}, RAM: {specs.get('ram', '')}, Card đồ họa VGA: {specs.get('gpu', '')}."
+                
+                # Lưu thêm siêu dữ liệu (metadata) để lấy ra làm thẻ UI sau này
+                metadata = {
+                    "id": str(prod["_id"]),
+                    "name": prod["name"],
+                    "price": prod["price"],
+                    "image": prod.get("thumbnail", "")
+                }
+                
+                docs.append(Document(page_content=text_content, metadata=metadata))
         
+        # Tạo cơ sở dữ liệu FAISS từ danh sách tài liệu
+        if docs:
+            VECTOR_DB = FAISS.from_documents(docs, embeddings)
+            print(f"✅ Đã tạo Vector DB thành công cho {len(docs)} sản phẩm.")
+        else:
+            print("⚠️ Không có sản phẩm hợp lệ nào để tạo Vector.")
+            
     except Exception as e:
-        print(f"❌ Lỗi kết nối MongoDB: {e}")
+        print(f"❌ Lỗi kết nối MongoDB hoặc tạo FAISS: {e}")
 
 load_data_from_mongo()
 
@@ -138,7 +150,7 @@ class ChatRequest(BaseModel):
 @app.post("/chat")
 async def chat_endpoint(request: ChatRequest):
     try:
-        if not PRODUCT_CONTEXT:
+        if VECTOR_DB is None:
             load_data_from_mongo()
 
         user_query = request.message
@@ -151,7 +163,19 @@ async def chat_endpoint(request: ChatRequest):
             return { "reply": "Quốc Nhật chỉ top 2 thôi! 🥈😂", "products": [] }
         # ------------------
 
-        # Prompt được tinh chỉnh để trả lời chính xác hơn
+        # --- TIẾN HÀNH SIMILARITY SEARCH (RAG) ---
+        # Tìm 4 sản phẩm giống với câu hỏi của người dùng nhất
+        search_results = VECTOR_DB.similarity_search(user_query, k=4)
+        
+        # Rút trích thông tin sản phẩm tìm được để nhét vào ngữ cảnh cho AI
+        retrieved_context = ""
+        recommended_products = [] # Lưu metadata để trả về Frontend hiện UI luôn
+        
+        for doc in search_results:
+            retrieved_context += f"- {doc.page_content}\n"
+            recommended_products.append(doc.metadata)
+
+        # Prompt giờ đây chỉ chứa các sản phẩm liên quan nhất, không phải toàn bộ DB
         prompt = f"""Bạn là Trợ lý AI của LAPTOP STORE.
 
 === THÔNG TIN SHOP ===
@@ -160,19 +184,14 @@ async def chat_endpoint(request: ChatRequest):
 === XU HƯỚNG BÁN CHẠY ===
 {MARKET_INSIGHTS}
 
-=== DANH SÁCH SẢN PHẨM ===
-{PRODUCT_CONTEXT}
+=== SẢN PHẨM PHÙ HỢP TÌM ĐƯỢC THEO YÊU CẦU ===
+{retrieved_context}
 
 === YÊU CẦU QUAN TRỌNG ===
-1. Khách hỏi gì đáp nấy. KHÔNG tự ý liệt kê sản phẩm bán chạy nếu khách không hỏi về "bán chạy" hay "hot".
-2. Nếu khách hỏi chung chung (ví dụ: "thương hiệu nào tốt"), hãy phân tích thương hiệu, ĐỪNG liệt kê tên sản phẩm cụ thể trừ khi cần thiết.
-3. Khi bạn muốn gợi ý sản phẩm cho khách xem, hãy viết CHÍNH XÁC tên sản phẩm (y hệt trong danh sách) vào câu trả lời.
-4. Giá tiền phải có đuôi "VND".
-5. Bạn có thể trả lời những câu hỏi ngoài phạm vi shop bán laptop này.
-6. bạn có thể trả lời những nội dung liên quan về sức khỏe .
-7. bạn là một đầu bếp giỏi có thể tư vấn cho khách hàng về các bữa ăn.
-
-
+1. Khách hỏi gì đáp nấy. 
+2. Dựa vào danh sách "SẢN PHẨM PHÙ HỢP TÌM ĐƯỢC" ở trên để tư vấn chi tiết cho khách.
+3. Khi gợi ý, hãy viết CHÍNH XÁC tên sản phẩm và báo giá kèm đuôi "VND".
+4. Nếu khách hỏi không liên quan đến laptop (ví dụ sức khỏe, nấu ăn), bạn vẫn được phép trả lời bình thường.
 
 Khách hỏi: "{user_query}"
 Trả lời:"""
@@ -180,34 +199,13 @@ Trả lời:"""
         response = llm.invoke(prompt)
         answer = response.content
         
-        # --- LOGIC TÌM SẢN PHẨM LIÊN QUAN (CẢI TIẾN) ---
-        recommended_products = []
-        answer_lower = answer.lower() # Chuyển câu trả lời về chữ thường
-        
-        for prod in PRODUCT_LIST_RAW:
-            # Chuyển tên sản phẩm về chữ thường để so sánh
-            prod_name = prod['name'].lower()
-            
-            # Logic: Chỉ hiện thẻ nếu Tên sản phẩm xuất hiện trong câu trả lời
-            # VÀ sản phẩm đó không phải là sản phẩm rác (giá > 10000)
-            if prod_name in answer_lower and prod['price'] > 10000:
-                recommended_products.append({
-                    "id": str(prod["_id"]),
-                    "name": prod["name"],
-                    "price": prod["price"],
-                    "image": prod.get("thumbnail", "")
-                })
-                
-                # Giới hạn hiển thị 4 thẻ để không bị rối
-                if len(recommended_products) >= 4:
-                    break
-
+        # Trả về câu trả lời và danh sách sản phẩm liên quan để UI render thẻ
         return { "reply": answer, "products": recommended_products }
 
     except Exception as e:
         print(f"Lỗi Chat: {e}")
-        return { "reply": "Chủ shop nghèo nên xài API free mà giờ quá tải bạn chờ xí:))", "products": [] }
+        return { "reply": "Hệ thống AI đang quá tải, bạn chờ xí nha :))", "products": [] }
 
 @app.get("/")
 def home():
-    return {"status": "AI Server V5 (Smart Filtering)"}
+    return {"status": "AI Server V6 (Vector Search & FAISS RAG Activated)"}
