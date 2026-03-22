@@ -100,6 +100,13 @@ function CheckoutPage() {
   // Xử lý đặt hàng
   const handleOrder = async (e) => {
     e.preventDefault();
+    const phoneRegex = /^0\d{9}$/;
+    if (!phoneRegex.test(shippingInfo.phoneNumber)) {
+      alert(
+        "Số điện thoại không hợp lệ! Vui lòng nhập đúng 10 số và bắt đầu bằng số 0.",
+      );
+      return;
+    }
     if (isProcessing) return;
     setIsProcessing(true);
 

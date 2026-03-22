@@ -235,13 +235,6 @@ const forgotPassword = async (req, res) => {
 /**
  * --- HÀM 6: ĐẶT LẠI MẬT KHẨU (RESET PASSWORD) ---
  * Logic cho: PUT /api/auth/resetpassword/:resetToken
- * Quyền truy cập: Public
- *
- * Chức năng:
- * 1. Nhận resetToken và password mới
- * 2. Kiểm tra token có hợp lệ và chưa hết hạn không
- * 3. Mã hóa password mới
- * 4. Cập nhật password và xóa token
  */
 const resetPassword = async (req, res) => {
   try {
@@ -291,6 +284,21 @@ const resetPassword = async (req, res) => {
           "Token không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu reset lại.",
       });
     }
+
+    // ==========================================
+    // 👉 BẮT ĐẦU ĐOẠN MỚI THÊM: Kiểm tra trùng mật khẩu cũ
+    // ==========================================
+    const isSamePassword = await bcrypt.compare(password, user.password);
+
+    if (isSamePassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Mật khẩu mới không được trùng với mật khẩu cũ.",
+      });
+    }
+    // ==========================================
+    // 👉 KẾT THÚC ĐOẠN MỚI THÊM
+    // ==========================================
 
     // 7. Mã hóa mật khẩu mới
     const salt = await bcrypt.genSalt(10);

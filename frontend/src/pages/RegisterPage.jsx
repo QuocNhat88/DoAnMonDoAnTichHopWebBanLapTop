@@ -81,6 +81,7 @@ function RegisterPage() {
           {/* Email */}
           <div className="mb-4">
             <label className="block text-gray-700 mb-2">Email</label>
+            <h3>nhập đúng gmail để đề phòng lúc quên mật khẩu </h3>
             <input
               type="email"
               name="email"

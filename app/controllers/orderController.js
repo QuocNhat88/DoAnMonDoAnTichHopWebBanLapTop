@@ -11,7 +11,20 @@ const createOrder = async (req, res) => {
   try {
     const { shippingInfo, paymentMethod } = req.body;
     const userId = req.user.id; // Lấy từ token xác thực
+    if (!shippingInfo || !shippingInfo.phoneNumber) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Vui lòng nhập số điện thoại." });
+    }
 
+    const phoneRegex = /^0\d{9}$/;
+    if (!phoneRegex.test(shippingInfo.phoneNumber)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Số điện thoại không hợp lệ. Vui lòng nhập đúng 10 số và bắt đầu bằng số 0.",
+      });
+    }
     // 1. Lấy thông tin User và Giỏ hàng
     const user = await User.findById(userId);
     const cart = user.cart;
@@ -41,7 +54,7 @@ const createOrder = async (req, res) => {
     // 3. Tính toán tiền
     const itemsPrice = cart.reduce(
       (acc, item) => acc + item.price * item.quantity,
-      0
+      0,
     );
     const taxPrice = 0; // Tùy chỉnh thuế
     const shippingPrice = 0; // Tùy chỉnh ship
@@ -117,7 +130,7 @@ const getOrderById = async (req, res) => {
 
     const order = await Order.findById(orderId).populate(
       "user",
-      "username email fullName"
+      "username email fullName",
     );
 
     if (!order) {

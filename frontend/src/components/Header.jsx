@@ -9,7 +9,7 @@ function Header() {
   const { user, logout } = useContext(AuthContext);
   const totalItems = cartItems.reduce(
     (total, item) => total + item.quantity,
-    0
+    0,
   );
 
   // --- LOGIC TÌM KIẾM MỚI ---
@@ -55,8 +55,16 @@ function Header() {
 
         <nav className="flex items-center gap-6">
           {/* ... (Phần menu giữ nguyên) ... */}
-          <Link
-            to="/cart"
+          <button
+            onClick={(e) => {
+              if (!user) {
+                e.preventDefault();
+                alert("Bạn cần đăng nhập để xem giỏ hàng!");
+                navigate("/login");
+              } else {
+                navigate("/cart");
+              }
+            }}
             className="flex items-center text-gray-700 hover:text-blue-600 relative"
           >
             <span className="text-2xl mr-1"> </span>
@@ -66,7 +74,8 @@ function Header() {
               </span>
             )}
             <span className="font-medium hidden sm:block">Giỏ hàng</span>
-          </Link>
+          </button>
+          {/* ----------------------------- */}
           {user ? (
             <div className="flex items-center gap-4">
               {/* Sửa lại Link vào trang cá nhân */}
