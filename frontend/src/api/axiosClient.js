@@ -1,8 +1,13 @@
 // src/api/axiosClient.js
 import axios from "axios";
 
+// Nếu có biến môi trường thì dùng, không có thì tự lùi về dùng link Render
+const baseURL =
+  import.meta.env.VITE_BACKEND_URL ||
+  "https://laptopbackend-d31k.onrender.com/api";
+
 const axiosClient = axios.create({
-  baseURL: "https://laptopbackend-d31k.onrender.com/api",
+  baseURL: baseURL,
   headers: {
     "Content-Type": "application/json",
   },
