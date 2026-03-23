@@ -155,9 +155,6 @@ function CheckoutPage() {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
         <div className="bg-white p-8 rounded-lg shadow-lg max-w-lg mx-auto border-2 border-green-500">
-          <h2 className="text-2xl font-bold text-green-600 mb-2">
-            Đặt hàng thành công!
-          </h2>
           <p className="mb-6 text-gray-700">
             Vui lòng quét mã QR bên dưới để hoàn tất thanh toán.
           </p>
