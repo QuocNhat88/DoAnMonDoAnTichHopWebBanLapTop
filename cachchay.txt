@@ -1,8 +1,0 @@
-
-
-
-BoxchatAI : tạo một terminal mới gõ 'cd ai_server' rồi gõ 'source .venv/Scripts/activate && cd ai_server && uvicorn main:app --reload'
-
-
-
-

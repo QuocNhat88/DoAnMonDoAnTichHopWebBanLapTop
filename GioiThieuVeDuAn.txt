@@ -1,0 +1,8 @@
+tài khoản admin : nnhat426@gmail.com . mật khẩu :123456
+
+
+BoxchatAI : tạo một terminal rồi gõ 'source .venv/Scripts/activate && cd ai_server && uvicorn main:app --reload'
+
+
+
+
