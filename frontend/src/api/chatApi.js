@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// Đường dẫn server Python bạn vừa chạy xong
-const AI_BASE_URL = "http://127.0.0.1:8000";
+// Đường dẫn server Python trên Render
+const AI_BASE_URL = "https://ai-server-g53g.onrender.com";
 
 const chatApi = {
   sendMessage: async (message) => {
