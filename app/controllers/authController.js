@@ -200,7 +200,8 @@ const forgotPassword = async (req, res) => {
 
     // Tạo link
     const resetUrl = `${
-      process.env.FRONTEND_URL || "http://localhost:5173"
+      process.env.FRONTEND_URL ||
+      "https://do-an-mon-do-an-tich-hop-web-ban-la.vercel.app"
     }/resetpassword/${resetToken}`;
 
     const message = `Click vào đây để reset: <a href="${resetUrl}">Reset Password</a>`;
