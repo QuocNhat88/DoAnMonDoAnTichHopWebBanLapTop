@@ -1,5 +1,6 @@
 -tài khoản admin : nnhat426@gmail.com . mật khẩu :123456
 -chatbox đang bị chậm sau khi deploy em đang tìm cách khắc phục
+-em đang sửa lại responsive để tương thích tốt hơn với giao diện điện thoại
 -chức năng em thấy oke trong dự án là , quên mật khẩu , chatbox , thanh toán qr
 
 
