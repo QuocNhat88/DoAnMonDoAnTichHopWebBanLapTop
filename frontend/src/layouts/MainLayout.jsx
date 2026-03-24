@@ -1,27 +1,19 @@
-// src/layouts/MainLayout.jsx
-
-// Import Component "Outlet" từ react-router-dom
-// Outlet đóng vai trò là cái "lỗ hổng" để nội dung trang con chui vào
 import { Outlet } from "react-router-dom";
-import Header from "../components/Header"; // Import Header vừa tạo
-import Footer from "../components/Footer"; // Import Footer vừa tạo
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 function MainLayout() {
   return (
-    // min-h-screen: đảm bảo trang web luôn cao ít nhất bằng màn hình
-    // flex-col: sắp xếp các phần tử dọc (Header -> Content -> Footer)
-    <div className="flex flex-col min-h-screen">
-      {/* 1. Header luôn nằm trên cùng */}
+    // Thêm bg-slate-50 để nền web có màu xám sáng cực nhẹ, giúp các thẻ trắng nổi bật hơn
+    // Thêm text-slate-800 để chuẩn hóa màu chữ toàn trang
+    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-800 font-sans">
       <Header />
 
-      {/* 2. Phần nội dung chính (Main Content) */}
-      {/* flex-grow: giúp phần này giãn ra để đẩy Footer xuống đáy nếu nội dung ngắn */}
-      <main className="flex-grow container mx-auto px-4 py-8">
-        {/* Outlet là nơi code của trang Home, Login... sẽ hiển thị */}
+      {/* max-w-7xl giúp giới hạn độ rộng tối đa trên màn hình PC siêu to, nhìn gọn gàng hơn */}
+      <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Outlet />
       </main>
 
-      {/* 3. Footer luôn nằm dưới cùng */}
       <Footer />
     </div>
   );
