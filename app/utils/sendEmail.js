@@ -1,3 +1,6 @@
+// DÒNG PHÉP THUẬT: Ép Node.js ưu tiên dùng mạng IPv4 để tránh bị Google chặn trên Render
+require("dns").setDefaultResultOrder("ipv4first");
+
 // Import thư viện 'nodemailer'
 const nodemailer = require("nodemailer");
 
@@ -10,12 +13,15 @@ const sendEmail = async (options) => {
     // 1. Tạo Transporter với cấu hình máy chủ SMTP cụ thể
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
-      port: 587, // Đổi sang cổng 587
-      secure: false, // Cổng 587 bắt buộc secure phải là false
-      requireTLS: true, // Ép buộc sử dụng mã hóa TLS
+      port: 465, // Quay lại port 465 an toàn
+      secure: true, // Dùng true cho port 465 (kết nối bảo mật SSL/TLS)
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: process.env.EMAIL_USER, // Tên đăng nhập Gmail
+        pass: process.env.EMAIL_PASS, // Mật khẩu ứng dụng (16 ký tự)
+      },
+      // Thêm cấu hình này để bỏ qua một số rào cản SSL trên server cloud
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
@@ -31,10 +37,10 @@ const sendEmail = async (options) => {
     // 3. Thực hiện gửi
     await transporter.sendMail(mailOptions);
 
-    console.log(`Email đã được gửi thành công đến: ${options.email}`);
+    console.log(`✅ Email đã được gửi thành công đến: ${options.email}`);
     return true;
   } catch (error) {
-    console.error("Lỗi khi gửi email:", error.message);
+    console.error("❌ Lỗi khi gửi email:", error.message);
     // NÉM LỖI ra ngoài để file Controller biết đường báo về Frontend chữ màu đỏ
     throw new Error("Lỗi máy chủ gửi mail: " + error.message);
   }
