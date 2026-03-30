@@ -1,50 +1,45 @@
-// DÒNG PHÉP THUẬT: Ép Node.js ưu tiên dùng mạng IPv4 để tránh bị Google chặn trên Render
-require("dns").setDefaultResultOrder("ipv4first");
-
-// Import thư viện 'nodemailer'
-const nodemailer = require("nodemailer");
-
 /**
- * --- HÀM GỬI EMAIL ---
- * Đã cấu hình chống lỗi Connection Timeout trên Render
+ * --- HÀM GỬI EMAIL BẰNG API BREVO ---
+ * Cách này dùng cổng HTTPS (443) nên CHẮC CHẮN 100% KHÔNG BỊ TIMEOUT TRÊN RENDER
  */
 const sendEmail = async (options) => {
   try {
-    // 1. Tạo Transporter với cấu hình máy chủ SMTP cụ thể
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465, // Quay lại port 465 an toàn
-      secure: true, // Dùng true cho port 465 (kết nối bảo mật SSL/TLS)
-      auth: {
-        user: process.env.EMAIL_USER, // Tên đăng nhập Gmail
-        pass: process.env.EMAIL_PASS, // Mật khẩu ứng dụng (16 ký tự)
+    // Gọi thẳng lên API của Brevo qua web request
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "api-key": process.env.BREVO_API_KEY, // Mã API bạn vừa dán bên Render
+        "content-type": "application/json",
       },
-      // Thêm cấu hình này để bỏ qua một số rào cản SSL trên server cloud
-      tls: {
-        rejectUnauthorized: false,
-      },
+      body: JSON.stringify({
+        sender: {
+          name: "LaptopStore - Quoc Nhat",
+          email: process.env.EMAIL_USER, // Phải là email bạn dùng đăng ký Brevo (nnhat425@gmail.com)
+        },
+        to: [
+          {
+            email: options.email, // Email người dùng nhập trên web
+          },
+        ],
+        subject: options.subject,
+        htmlContent: options.message, // Nội dung HTML chứa link đổi mật khẩu
+      }),
     });
 
-    // 2. Định nghĩa "Lá thư" (Mail Options)
-    const mailOptions = {
-      // Tên người gửi hiển thị
-      from: `"WebBanLaptop" <${process.env.EMAIL_USER}>`,
-      to: options.email, // Email người nhận
-      subject: options.subject, // Tiêu đề email
-      html: options.message, // Nội dung email (dạng HTML)
-    };
+    // Kiểm tra nếu Brevo báo lỗi (ví dụ sai API Key)
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error("Brevo Error: " + JSON.stringify(errorData));
+    }
 
-    // 3. Thực hiện gửi
-    await transporter.sendMail(mailOptions);
-
-    console.log(`✅ Email đã được gửi thành công đến: ${options.email}`);
+    console.log(`✅ Tuyệt vời! Đã gửi email thành công tới: ${options.email}`);
     return true;
   } catch (error) {
-    console.error("❌ Lỗi khi gửi email:", error.message);
-    // NÉM LỖI ra ngoài để file Controller biết đường báo về Frontend chữ màu đỏ
-    throw new Error("Lỗi máy chủ gửi mail: " + error.message);
+    console.error("❌ Lỗi API Brevo:", error.message);
+    // Ném lỗi để Controller báo về Frontend chữ đỏ
+    throw new Error("Lỗi hệ thống gửi mail API: " + error.message);
   }
 };
 
-// Xuất hàm để dùng ở nơi khác
 module.exports = sendEmail;
