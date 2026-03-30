@@ -1,51 +1,43 @@
-// Import thư viện 'nodemailer' mà chúng ta vừa cài
+// Import thư viện 'nodemailer'
 const nodemailer = require("nodemailer");
 
 /**
  * --- HÀM GỬI EMAIL ---
- * Đây là một hàm "tiện ích" bất đồng bộ
- * Nó nhận vào một "options" (tùy chọn)
- * và gửi email bằng Gmail
- *
+ * Đã cấu hình chống lỗi Connection Timeout trên Render
  */
 const sendEmail = async (options) => {
   try {
-    // 1. Tạo "Người vận chuyển" (Transporter)
-    // Đây là "cỗ máy" gửi email,
-    // nó cần thông tin đăng nhập Gmail của bạn
+    // 1. Tạo Transporter với cấu hình máy chủ SMTP cụ thể
     const transporter = nodemailer.createTransport({
-      // Chúng ta dùng Gmail
-      service: "gmail",
-      // (Nếu bạn dùng host khác,
-      //  cần host, port, secure...)
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true, // Dùng true cho port 465 (kết nối bảo mật SSL/TLS)
       auth: {
-        // Lấy thông tin từ tệp .env
-        // (Đây là lý do chúng ta thêm vào .env)
-        user: process.env.EMAIL_USER, // (Email 'nnhat425@gmail.com')
-        pass: process.env.EMAIL_PASS, // (Mật khẩu Ứng dụng)
+        user: process.env.EMAIL_USER, // Tên đăng nhập Gmail
+        pass: process.env.EMAIL_PASS, // Mật khẩu ứng dụng (16 ký tự)
       },
     });
 
     // 2. Định nghĩa "Lá thư" (Mail Options)
     const mailOptions = {
-      // Tên người gửi (bạn có thể đổi tên "WebBanLaptop" tùy ý)
+      // Tên người gửi hiển thị
       from: `"WebBanLaptop" <${process.env.EMAIL_USER}>`,
-      to: options.email, // Email người nhận (email của user)
+      to: options.email, // Email người nhận
       subject: options.subject, // Tiêu đề email
       html: options.message, // Nội dung email (dạng HTML)
     };
 
-    // 3. Gửi "Lá thư"
+    // 3. Thực hiện gửi
     await transporter.sendMail(mailOptions);
 
-    console.log("Email đã được gửi thành công!");
+    console.log(`Email đã được gửi thành công đến: ${options.email}`);
     return true;
   } catch (error) {
     console.error("Lỗi khi gửi email:", error.message);
-    // Hãy NÉM LỖI (throw) ra ngoài để Controller biết mà báo về Frontend (chữ màu đỏ)
-    throw new Error("Không thể gửi email. Chi tiết lỗi: " + error.message);
+    // NÉM LỖI ra ngoài để file Controller biết đường báo về Frontend chữ màu đỏ
+    throw new Error("Lỗi máy chủ gửi mail: " + error.message);
   }
 };
 
-// Xuất (export) hàm này ra
+// Xuất hàm để dùng ở nơi khác
 module.exports = sendEmail;
