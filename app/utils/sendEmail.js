@@ -41,9 +41,9 @@ const sendEmail = async (options) => {
     console.log("Email đã được gửi thành công!");
     return true;
   } catch (error) {
-    // Nếu gửi lỗi (thường là do sai Mật khẩu Ứng dụng)
     console.error("Lỗi khi gửi email:", error.message);
-    return false;
+    // Hãy NÉM LỖI (throw) ra ngoài để Controller biết mà báo về Frontend (chữ màu đỏ)
+    throw new Error("Không thể gửi email. Chi tiết lỗi: " + error.message);
   }
 };
 
