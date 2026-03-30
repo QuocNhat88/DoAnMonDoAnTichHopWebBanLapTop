@@ -1,35 +1,4 @@
 -tài khoản admin : nnhat426@gmail.com . mật khẩu :123456
--chatbox đang bị chậm sau khi deploy em đang tìm cách khắc phục
--em đang sửa lại responsive để tương thích tốt hơn với giao diện điện thoại
--chức năng em thấy oke trong dự án là , quên mật khẩu , chatbox , thanh toán qr
-
-
-1. Tổng quan (Overview)
-Dự án là một hệ thống thương mại điện tử bán lẻ Laptop, 
-không chỉ dừng lại ở các chức năng mua bán cơ bản mà còn
-tích hợp Trợ lý ảo thông minh (AI Chatbot) giúp tư vấn cấu hình
- và Hệ thống thanh toán tự động qua QR Code và quên mật khẩu.
-
-2. Các chức năng chính (Main Features)
-Quản lý sản phẩm & Đơn hàng: Hệ thống CRUD đầy đủ cho sản phẩm, danh mục, thương hiệu và trạng thái đơn hàng.
-
-Xác thực & Bảo mật: Đăng ký/Đăng nhập với JWT, mã hóa mật khẩu bằng Bcrypt.
-
-Quên mật khẩu: Quy trình gửi mã khôi phục qua Email và xác thực bằng Token có thời hạn.
-
-AI Chatbot (RAG): Tư vấn sản phẩm dựa trên dữ liệu thực tế trong Database bằng kỹ thuật tìm kiếm vector (FAISS).
-
-Thanh toán Webhook: Tự động nhận thông báo biến động số dư và chuyển trạng thái đơn hàng sang "Đã thanh toán".
-
-Cấu hình đa môi trường: Quản lý bảo mật các API Keys và kết nối DB qua biến môi trường (.env).
-
-3. Kiến trúc dự án (Project Architecture)
-Dự án được triển khai theo mô hình Micro-services nhẹ, tách biệt giữa Server Logic và Server AI để tối ưu hiệu năng và dễ dàng mở rộng.
-
-Client (Vercel) <-> Node.js Server (Render) <-> MongoDB.
-
-Node.js Server <-> AI Server (Render) <-> Gemini API.
-
 
 BoxchatAI : tạo một terminal rồi gõ 'source .venv/Scripts/activate && cd ai_server && uvicorn main:app --reload'
 
