@@ -11,8 +11,6 @@ function MyOrdersPage() {
     const fetchOrders = async () => {
       try {
         const response = await orderApi.getMyOrders();
-        console.log("Danh sách đơn hàng:", response);
-        // Backend trả về: { success: true, count: 2, data: [...] }
         setOrders(response.data || []);
       } catch (error) {
         console.log("Lỗi lấy đơn hàng:", error);
@@ -20,35 +18,32 @@ function MyOrdersPage() {
         setLoading(false);
       }
     };
-
     fetchOrders();
   }, []);
 
-  // Hàm tô màu cho trạng thái đơn hàng
   const getStatusColor = (status) => {
     switch (status) {
       case "pending":
-        return "bg-yellow-100 text-yellow-800"; // Chờ xử lý
+        return "bg-amber-50 text-amber-600 border-amber-200";
       case "processing":
-        return "bg-blue-100 text-blue-800"; // Đang xử lý
+        return "bg-blue-50 text-blue-600 border-blue-200";
       case "shipped":
-        return "bg-indigo-100 text-indigo-800"; // Đang giao
+        return "bg-indigo-50 text-indigo-600 border-indigo-200";
       case "delivered":
-        return "bg-green-100 text-green-800"; // Đã giao
+        return "bg-emerald-50 text-emerald-600 border-emerald-200";
       case "cancelled":
-        return "bg-red-100 text-red-800"; // Đã hủy
+        return "bg-red-50 text-red-600 border-red-200";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-50 text-gray-600 border-gray-200";
     }
   };
 
-  // Dịch trạng thái sang tiếng Việt
   const getStatusText = (status) => {
     switch (status) {
       case "pending":
         return "Chờ xử lý";
       case "processing":
-        return "Đang xử lý";
+        return "Đang chuẩn bị hàng";
       case "shipped":
         return "Đang vận chuyển";
       case "delivered":
@@ -60,68 +55,133 @@ function MyOrdersPage() {
     }
   };
 
-  if (loading)
-    return <div className="text-center mt-20">Đang tải đơn hàng...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-4 border-blue-600"></div>
+        <p className="mt-4 text-gray-500 font-medium">
+          Đang tải lịch sử mua hàng...
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-gray-800">
-        Đơn hàng của tôi
-      </h1>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div className="mb-8">
+        <h1 className="text-3xl font-black text-gray-900 tracking-tight">
+          Đơn hàng của tôi
+        </h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Theo dõi trạng thái giao hàng và lịch sử mua sắm.
+        </p>
+      </div>
 
       {orders.length === 0 ? (
-        <div className="text-center bg-gray-50 p-10 rounded-lg">
-          <p className="text-gray-600 mb-4">Bạn chưa có đơn hàng nào.</p>
-          <Link to="/" className="text-blue-600 hover:underline font-bold">
-            Đi mua sắm ngay
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center p-12 text-center min-h-[400px]">
+          <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6 text-gray-300">
+            <svg
+              className="w-12 h-12"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.5"
+                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+              />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            Chưa có đơn hàng nào
+          </h3>
+          <p className="text-gray-500 mb-8 max-w-sm">
+            Bạn chưa thực hiện giao dịch nào. Hãy khám phá các mẫu laptop mới
+            nhất nhé!
+          </p>
+          <Link
+            to="/"
+            className="bg-blue-600 text-white px-8 py-3 rounded-full font-bold hover:bg-blue-700 shadow-sm transition-all hover:-translate-y-1"
+          >
+            Bắt đầu mua sắm
           </Link>
         </div>
       ) : (
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-100 text-gray-700 uppercase text-sm">
-              <tr>
-                <th className="py-4 px-6">Mã đơn hàng</th>
-                <th className="py-4 px-6">Ngày đặt</th>
-                <th className="py-4 px-6">Tổng tiền</th>
-                <th className="py-4 px-6">Trạng thái</th>
-                <th className="py-4 px-6 text-center">Hành động</th>
-              </tr>
-            </thead>
-            <tbody className="text-gray-600 text-sm">
-              {orders.map((order) => (
-                <tr key={order._id} className="border-b hover:bg-gray-50">
-                  <td className="py-4 px-6 font-medium text-blue-600">
-                    #{order._id.slice(-6).toUpperCase()}{" "}
-                    {/* Lấy 6 ký tự cuối cho gọn */}
-                  </td>
-                  <td className="py-4 px-6">
-                    {new Date(order.createdAt).toLocaleDateString("vi-VN")}
-                  </td>
-                  <td className="py-4 px-6 font-bold text-gray-800">
-                    {order.totalPrice?.toLocaleString("vi-VN")} đ
-                  </td>
-                  <td className="py-4 px-6">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(
-                        order.status
-                      )}`}
-                    >
-                      {getStatusText(order.status)}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 text-center">
-                    <Link
-                      to={`/order/${order._id}`}
-                      className="text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      Xem chi tiết
-                    </Link>
-                  </td>
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[800px]">
+              <thead>
+                <tr className="bg-slate-50 border-b border-gray-100 text-[11px] font-bold text-gray-500 uppercase tracking-widest">
+                  <th className="px-6 py-5">Mã đơn hàng</th>
+                  <th className="px-6 py-5">Ngày đặt</th>
+                  <th className="px-6 py-5">Tổng tiền</th>
+                  <th className="px-6 py-5">Trạng thái</th>
+                  <th className="px-6 py-5 text-right">Chi tiết</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {orders.map((order) => (
+                  <tr
+                    key={order._id}
+                    className="hover:bg-slate-50/50 transition-colors group"
+                  >
+                    <td className="px-6 py-5">
+                      <Link
+                        to={`/order/${order._id}`}
+                        className="font-mono text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors inline-flex items-center gap-2"
+                      >
+                        #{order._id.slice(-6).toUpperCase()}
+                      </Link>
+                    </td>
+                    <td className="px-6 py-5">
+                      <span className="text-sm font-medium text-gray-700">
+                        {new Date(order.createdAt).toLocaleDateString("vi-VN")}
+                      </span>
+                      <span className="block text-xs text-gray-400 mt-0.5">
+                        {new Date(order.createdAt).toLocaleTimeString("vi-VN", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5 font-black text-gray-900">
+                      {order.totalPrice?.toLocaleString("vi-VN")} ₫
+                    </td>
+                    <td className="px-6 py-5">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold border ${getStatusColor(order.status)}`}
+                      >
+                        {getStatusText(order.status)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5 text-right">
+                      <Link
+                        to={`/order/${order._id}`}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl transition-colors"
+                      >
+                        Xem
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

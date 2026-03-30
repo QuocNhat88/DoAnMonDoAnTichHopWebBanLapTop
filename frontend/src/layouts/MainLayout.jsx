@@ -1,16 +1,20 @@
+// src/layouts/MainLayout.jsx
 import { Outlet } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
 function MainLayout() {
   return (
-    // Thêm bg-slate-50 để nền web có màu xám sáng cực nhẹ, giúp các thẻ trắng nổi bật hơn
-    // Thêm text-slate-800 để chuẩn hóa màu chữ toàn trang
-    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-800 font-sans">
+    // Bỏ text-slate-800 ở đây vì các trang con đã tự set màu riêng.
+    // Giữ min-h-screen để footer luôn dính dưới đáy.
+    <div className="flex flex-col min-h-screen bg-slate-50 font-sans selection:bg-blue-200 selection:text-blue-900">
       <Header />
 
-      {/* max-w-7xl giúp giới hạn độ rộng tối đa trên màn hình PC siêu to, nhìn gọn gàng hơn */}
-      <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Bỏ max-w-7xl và px-4 ở đây. 
+        Tại sao? Vì mỗi trang con (Home, Product Detail, Cart...) 
+        cần có quyền kiểm soát riêng (VD: banner Trang chủ cần tràn viền 100% màn hình). 
+      */}
+      <main className="flex-grow w-full">
         <Outlet />
       </main>
 
