@@ -10,11 +10,12 @@ const sendEmail = async (options) => {
     // 1. Tạo Transporter với cấu hình máy chủ SMTP cụ thể
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
-      port: 465,
-      secure: true, // Dùng true cho port 465 (kết nối bảo mật SSL/TLS)
+      port: 587, // Đổi sang cổng 587
+      secure: false, // Cổng 587 bắt buộc secure phải là false
+      requireTLS: true, // Ép buộc sử dụng mã hóa TLS
       auth: {
-        user: process.env.EMAIL_USER, // Tên đăng nhập Gmail
-        pass: process.env.EMAIL_PASS, // Mật khẩu ứng dụng (16 ký tự)
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
