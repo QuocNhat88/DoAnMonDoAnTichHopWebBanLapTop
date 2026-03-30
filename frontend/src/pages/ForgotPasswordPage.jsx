@@ -1,8 +1,7 @@
-// src/pages/ForgotPasswordPage.jsx
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-// Nếu bạn đã có axios instance được config base url, tốt nhất nên dùng authApi thay vì fetch trực tiếp.
-// Ở đây tôi giữ nguyên logic fetch của bạn nhưng bọc lại bằng UI đẹp hơn.
+// Phải có dòng import này để dùng API đã cấu hình
+import authApi from "../api/authApi";
 
 function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -17,26 +16,17 @@ function ForgotPasswordPage() {
     setError("");
 
     try {
-      // 1. Gọi API gửi email reset
-      const response = await fetch(
-        "http://localhost:3000/api/auth/forgotpassword",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: email }),
-        },
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Lỗi từ Backend");
-      }
+      // ĐÂY LÀ ĐOẠN ĐÃ ĐƯỢC SỬA. Dùng authApi thay vì fetch localhost!
+      const data = await authApi.forgotPassword(email);
 
       setMessage(data.message || "Email hướng dẫn đã được gửi thành công!");
+      setEmail("");
     } catch (err) {
       console.error("LỖI:", err);
-      setError(err.message || "Lỗi kết nối server");
+      // Xử lý lỗi từ server hoặc lỗi mạng
+      const errorMsg =
+        err.response?.data?.message || err.message || "Lỗi kết nối server";
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -45,7 +35,6 @@ function ForgotPasswordPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full bg-white rounded-[2rem] shadow-xl overflow-hidden border border-gray-100 p-8 sm:p-10 relative">
-        {/* Background decorative blob */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full -mr-8 -mt-8 z-0"></div>
 
         <div className="relative z-10">
@@ -74,7 +63,6 @@ function ForgotPasswordPage() {
             </p>
           </div>
 
-          {/* Messages */}
           {message && (
             <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 p-4 rounded-xl mb-6 text-sm font-medium flex items-start gap-3">
               <svg
@@ -137,32 +125,7 @@ function ForgotPasswordPage() {
               disabled={loading}
               className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3.5 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-600/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {loading ? (
-                <>
-                  <svg
-                    className="animate-spin h-5 w-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  ĐANG XỬ LÝ...
-                </>
-              ) : (
-                "GỬI YÊU CẦU"
-              )}
+              {loading ? "ĐANG XỬ LÝ..." : "GỬI YÊU CẦU"}
             </button>
           </form>
 
