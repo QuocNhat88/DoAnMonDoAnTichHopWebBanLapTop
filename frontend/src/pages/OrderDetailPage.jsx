@@ -9,7 +9,7 @@ function OrderDetailPage() {
   const [loading, setLoading] = useState(true);
 
   const BANK_ID = "BIDV";
-  const ACCOUNT_NO = "V3CASSLAPTOPDEPTRAI";
+  const ACCOUNT_NO = "V3CASSLAPTOPMODULAR";
   const ACCOUNT_NAME = "NGUYEN VAN QUOC NHAT";
   const TEMPLATE = "compact";
 

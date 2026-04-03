@@ -25,7 +25,7 @@ function CheckoutPage() {
   // --- CẤU HÌNH TÀI KHOẢN NGÂN HÀNG ---
   const BANK_INFO = {
     BANK_ID: "BIDV",
-    ACCOUNT_NO: "V3CASSLAPTOPDEPTRAI",
+    ACCOUNT_NO: "V3CASSLAPTOPMODULAR",
     TEMPLATE: "compact",
     ACCOUNT_NAME: "NGUYEN VAN QUOC NHAT",
   };
