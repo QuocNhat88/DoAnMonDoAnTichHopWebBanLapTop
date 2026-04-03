@@ -1,30 +1,48 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-// Import authApi để dùng cấu hình axiosClient đã có sẵn link Render
+import { Link, useNavigate } from "react-router-dom";
 import authApi from "../api/authApi";
 
-function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
+function RegisterPage() {
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage("");
     setError("");
 
-    try {
-      // 1. Gọi API qua authApi (đã cấu hình baseURL tự động)
-      const response = await authApi.forgotPassword(email);
+    // Kiểm tra mật khẩu xác nhận
+    if (formData.password !== formData.confirmPassword) {
+      setError("Mật khẩu xác nhận không khớp!");
+      setLoading(false);
+      return;
+    }
 
-      // 2. Vì axiosClient của bạn trả về response.data nên ta lấy trực tiếp message
-      setMessage(response.message || "Email hướng dẫn đã được gửi thành công!");
-      setEmail(""); // Xóa trống email sau khi gửi thành công
+    try {
+      // Gọi API đăng ký (chỉ gửi username, email, password lên backend)
+      await authApi.register({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      // Nếu thành công, chuyển hướng về trang Đăng nhập kèm thông báo
+      navigate("/login", {
+        state: { message: "Đăng ký thành công! Vui lòng đăng nhập." },
+      });
     } catch (err) {
-      console.error("LỖI GỬI EMAIL:", err);
-      // 3. Lấy thông báo lỗi từ Server trả về (nếu có) hoặc lỗi mạng
+      console.error("LỖI ĐĂNG KÝ:", err);
       const errorMsg =
         err.response?.data?.message ||
         "Lỗi kết nối server. Vui lòng thử lại sau.";
@@ -53,38 +71,17 @@ function ForgotPasswordPage() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="2"
-                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
                 />
               </svg>
             </div>
             <h2 className="text-2xl font-black text-gray-900 tracking-tight">
-              Quên mật khẩu?
+              Tạo tài khoản mới
             </h2>
             <p className="text-sm text-gray-500 mt-2 font-medium px-4">
-              Đừng lo lắng! Nhập email bạn đã đăng ký, chúng tôi sẽ gửi liên kết
-              để đặt lại mật khẩu.
+              Tham gia cùng chúng tôi để trải nghiệm mua sắm tuyệt vời nhất!
             </p>
           </div>
-
-          {/* Thông báo Thành công */}
-          {message && (
-            <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 p-4 rounded-xl mb-6 text-sm font-medium flex items-start gap-3">
-              <svg
-                className="w-5 h-5 flex-shrink-0 mt-0.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              {message}
-            </div>
-          )}
 
           {/* Thông báo Lỗi */}
           {error && (
@@ -106,79 +103,86 @@ function ForgotPasswordPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-bold text-gray-700 mb-1.5"
-              >
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                Tên hiển thị
+              </label>
+              <input
+                name="username"
+                type="text"
+                required
+                className="w-full bg-slate-50 border border-gray-200 px-4 py-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                placeholder="Ví dụ: nhatquoc"
+                value={formData.username}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">
                 Địa chỉ Email
               </label>
               <input
-                id="email"
+                name="email"
                 type="email"
                 required
                 className="w-full bg-slate-50 border border-gray-200 px-4 py-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
                 placeholder="name@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                Mật khẩu
+              </label>
+              <input
+                name="password"
+                type="password"
+                required
+                className="w-full bg-slate-50 border border-gray-200 px-4 py-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                placeholder="Tối thiểu 6 ký tự"
+                value={formData.password}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                Xác nhận mật khẩu
+              </label>
+              <input
+                name="confirmPassword"
+                type="password"
+                required
+                className="w-full bg-slate-50 border border-gray-200 px-4 py-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                placeholder="Nhập lại mật khẩu"
+                value={formData.confirmPassword}
+                onChange={handleChange}
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3.5 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-600/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3.5 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-600/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed mt-2"
             >
-              {loading ? (
-                <>
-                  <svg
-                    className="animate-spin h-5 w-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  ĐANG XỬ LÝ...
-                </>
-              ) : (
-                "GỬI YÊU CẦU"
-              )}
+              {loading ? "ĐANG XỬ LÝ..." : "ĐĂNG KÝ NGAY"}
             </button>
           </form>
 
           <div className="mt-8 text-center">
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-1.5 text-sm font-bold text-gray-500 hover:text-blue-600 transition-colors"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            <p className="text-sm text-gray-500 font-medium">
+              Đã có tài khoản?{" "}
+              <Link
+                to="/login"
+                className="font-bold text-blue-600 hover:text-blue-700 transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-              Quay lại Đăng nhập
-            </Link>
+                Đăng nhập tại đây
+              </Link>
+            </p>
           </div>
         </div>
       </div>
@@ -186,4 +190,4 @@ function ForgotPasswordPage() {
   );
 }
 
-export default ForgotPasswordPage;
+export default RegisterPage;

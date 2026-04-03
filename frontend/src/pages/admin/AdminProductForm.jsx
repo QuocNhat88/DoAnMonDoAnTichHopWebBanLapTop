@@ -91,11 +91,25 @@ function AdminProductForm() {
     e.preventDefault();
     setIsSaving(true);
     try {
+      // --- BẮT ĐẦU ĐOẠN LÀM SẠCH DỮ LIỆU ---
+      // Tạo một bản sao của formData để xử lý trước khi gửi
+      const submitData = { ...formData };
+
+      // Nếu category hoặc brand là chuỗi rỗng (chưa chọn), thì xóa hẳn cái key đó đi
+      if (submitData.category === "") delete submitData.category;
+      if (submitData.brand === "") delete submitData.brand;
+
+      // Đảm bảo số lượng và giá là kiểu Number
+      submitData.price = Number(submitData.price);
+      submitData.stock = Number(submitData.stock);
+      // --- KẾT THÚC ĐOẠN LÀM SẠCH ---
+
       if (isEditMode) {
-        await productApi.update(id, formData);
+        // Gửi submitData (đã làm sạch) thay vì formData gốc
+        await productApi.update(id, submitData);
         alert("🎉 Cập nhật thành công!");
       } else {
-        await productApi.add(formData);
+        await productApi.add(submitData);
         alert("🎉 Thêm mới thành công!");
       }
       navigate("/admin/products");
@@ -105,7 +119,6 @@ function AdminProductForm() {
       setIsSaving(false);
     }
   };
-
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">

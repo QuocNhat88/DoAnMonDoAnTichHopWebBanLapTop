@@ -16,7 +16,7 @@ const ChatBubble = () => {
   // Tự động cuộn xuống khi có tin nhắn mới
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading]); // Thêm isLoading để cuộn khi hiện animation gõ chữ
+  }, [messages, isLoading]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -31,11 +31,31 @@ const ChatBubble = () => {
       // Gửi sang Python
       const data = await chatApi.sendMessage(userMsg.text);
 
+      // --- ĐOẠN FIX LỖI ĐỌC DỮ LIỆU AI TRẢ VỀ (CẬP NHẬT) ---
+      let botReplyText = "";
+
+      if (typeof data.reply === "string") {
+        // Trường hợp 1: AI ngoan ngoãn trả về chuỗi bình thường
+        botReplyText = data.reply;
+      } else if (Array.isArray(data.reply)) {
+        // Trường hợp 2 (Của bạn hiện tại): AI trả về một Mảng các Object
+        // Ta sẽ duyệt qua mảng, lấy giá trị 'text' của từng phần tử và ghép lại
+        botReplyText = data.reply.map((item) => item.text || "").join("\n");
+      } else if (data.reply && data.reply.text) {
+        // Trường hợp 3: AI trả về 1 Object đơn lẻ
+        botReplyText = data.reply.text;
+      } else {
+        // Trường hợp fallback: Nếu cấu trúc quá lạ
+        botReplyText =
+          "Xin lỗi, dữ liệu AI trả về hơi lạ nên mình không đọc được.";
+        console.log("Cấu trúc AI trả về:", data.reply);
+      }
+
       // Hiện trả lời của Bot
       const botMsg = {
         sender: "bot",
-        text: data.reply,
-        products: data.products || [],
+        text: botReplyText, // Dùng đoạn text đã được móc ra sạch sẽ
+        products: Array.isArray(data.products) ? data.products : [],
       };
       setMessages((prev) => [...prev, botMsg]);
     } catch (error) {
@@ -146,8 +166,8 @@ const ChatBubble = () => {
                   <div className="whitespace-pre-wrap">{msg.text}</div>
                 </div>
 
-                {/* Thẻ sản phẩm gợi ý */}
-                {msg.products && msg.products.length > 0 && (
+                {/* Thẻ sản phẩm gợi ý - Thêm Array.isArray để bọc lót */}
+                {Array.isArray(msg.products) && msg.products.length > 0 && (
                   <div className="mt-2 w-[85%] space-y-2">
                     {msg.products.map((prod) => (
                       <div

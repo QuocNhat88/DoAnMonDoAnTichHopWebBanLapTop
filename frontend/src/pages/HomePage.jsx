@@ -28,10 +28,18 @@ function HomePage() {
           categoryApi.getAll(),
           brandApi.getAll(),
         ]);
-        setCategories(catRes.data || catRes);
-        setBrands(brandRes.data || brandRes);
+
+        // FIX LỖI 1: Ép kiểu an toàn, đảm bảo luôn là mảng (Array)
+        // Tránh lỗi categories.slice is not a function nếu API trả về Object
+        const catData = catRes.data || catRes.categories || catRes;
+        const brandData = brandRes.data || brandRes.brands || brandRes;
+
+        setCategories(Array.isArray(catData) ? catData : []);
+        setBrands(Array.isArray(brandData) ? brandData : []);
       } catch (error) {
         console.log("Lỗi tải metadata:", error);
+        setCategories([]);
+        setBrands([]);
       }
     };
     fetchMetaData();
@@ -41,22 +49,30 @@ function HomePage() {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const params = {
-          keyword: keyword || "",
-          category: filter.category,
-          brand: filter.brand,
-          minPrice: filter.minPrice,
-          maxPrice: filter.maxPrice,
-        };
+        const params = {};
+        if (keyword) params.keyword = keyword;
+        if (filter.category) params.category = filter.category;
+        if (filter.brand) params.brand = filter.brand;
+        if (filter.minPrice) params.minPrice = filter.minPrice;
+        if (filter.maxPrice) params.maxPrice = filter.maxPrice;
+
         const response = await productApi.getAll(params);
-        setProducts(response.data || response.products || []);
+
+        const productList =
+          response.data ||
+          response.products ||
+          (Array.isArray(response) ? response : []);
+
+        setProducts(Array.isArray(productList) ? productList : []);
         setVisibleCount(12);
       } catch (error) {
-        console.log("Lỗi lấy sản phẩm:", error);
+        console.error("Lỗi lấy sản phẩm từ API:", error);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
     };
+
     fetchProducts();
   }, [keyword, filter]);
 
@@ -69,13 +85,12 @@ function HomePage() {
     setVisibleCount((prev) => prev + 8);
   };
 
-  const topCategories = categories.slice(0, 6);
-  const featuredBrands = brands.slice(0, 5);
+  // FIX LỖI 2: Mặc dù đã chặn ở trên, nhưng cứ đề phòng an toàn thêm 1 lớp
+  const topCategories = Array.isArray(categories) ? categories.slice(0, 6) : [];
+  const featuredBrands = Array.isArray(brands) ? brands.slice(0, 5) : [];
 
-  // --- COMPONENT CARD ĐÃ ĐƯỢC LỘT XÁC ---
   const ProductCard = ({ product }) => (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group overflow-hidden">
-      {/* Khung ảnh sản phẩm */}
       <div className="relative aspect-square p-6 flex items-center justify-center bg-gray-50/50 group-hover:bg-white transition-colors duration-300">
         <img
           src={product.thumbnail || "https://via.placeholder.com/300"}
@@ -89,7 +104,6 @@ function HomePage() {
         )}
       </div>
 
-      {/* Nội dung sản phẩm */}
       <div className="p-5 flex flex-col flex-grow">
         <div className="text-[11px] text-gray-400 mb-1.5 uppercase font-bold tracking-widest">
           {product.brand?.name || "Thương hiệu"}
@@ -141,7 +155,6 @@ function HomePage() {
 
   return (
     <div className="bg-slate-50 min-h-screen pb-12">
-      {/* HERO SECTION - Giao diện Header to */}
       {!keyword && (
         <section className="bg-white border-b border-gray-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 lg:pt-12 lg:pb-16">
@@ -177,7 +190,6 @@ function HomePage() {
                   </button>
                 </div>
 
-                {/* Thống kê nhỏ */}
                 <div className="mt-12 grid grid-cols-3 gap-4 text-center border-t border-gray-100 pt-8 max-w-2xl mx-auto lg:mx-0">
                   <div>
                     <p className="text-3xl font-black text-gray-900">
@@ -202,7 +214,6 @@ function HomePage() {
                 </div>
               </div>
 
-              {/* Ảnh Banner Bên Phải */}
               <div className="relative mt-8 lg:mt-0 px-4 sm:px-0">
                 <div className="absolute inset-0 bg-gradient-to-tr from-blue-500 to-indigo-500 blur-3xl opacity-20 rounded-full"></div>
                 <div className="relative bg-gray-900 rounded-[2rem] p-6 shadow-2xl border border-gray-800 transform lg:rotate-2 hover:rotate-0 transition-transform duration-500">
@@ -234,10 +245,9 @@ function HomePage() {
         </section>
       )}
 
-      {/* TẤT CẢ PHẦN DƯỚI ĐƯỢC BỌC TRONG max-w-7xl ĐỂ CĂN GIỮA ĐẸP TRÊN PC */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* DANH MỤC NỔI BẬT */}
-        {!keyword && topCategories.length > 0 && (
+        {/* FIX LỖI 3: Dùng toán tử 3 ngôi ( ? : null ) thay vì && để tránh render ra số 0 */}
+        {!keyword && topCategories?.length > 0 ? (
           <section className="py-12 border-b border-gray-200/60">
             <div className="flex justify-between items-end mb-6">
               <div>
@@ -262,7 +272,6 @@ function HomePage() {
                   className="bg-white border border-gray-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center hover:border-blue-500 hover:shadow-lg hover:-translate-y-1 transition-all group"
                 >
                   <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                    {/* Dùng 1 icon mạc định cho danh mục */}
                     <svg
                       className="w-6 h-6"
                       fill="none"
@@ -285,11 +294,9 @@ function HomePage() {
               ))}
             </div>
           </section>
-        )}
+        ) : null}
 
-        {/* PHẦN SẢN PHẨM & BỘ LỌC CHÍNH */}
         <section id="shop-section" className="py-12 space-y-8">
-          {/* Header của phần sản phẩm */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between bg-white p-6 rounded-3xl border border-gray-200 shadow-sm">
             <div>
               {keyword ? (
@@ -310,7 +317,6 @@ function HomePage() {
               <span className="px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-sm font-bold">
                 {products.length} sản phẩm
               </span>
-              {/* Lọc nhanh theo thương hiệu (Mang từ trên xuống đây cho gọn) */}
               <select
                 name="brand"
                 value={filter.brand}
@@ -328,7 +334,6 @@ function HomePage() {
           </div>
 
           <div className="grid gap-8 lg:grid-cols-[280px,1fr]">
-            {/* SIDEBAR BỘ LỌC */}
             <div className="space-y-6">
               <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm sticky top-24">
                 <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
@@ -348,7 +353,6 @@ function HomePage() {
                   </button>
                 </div>
 
-                {/* Lọc Danh mục */}
                 <div className="mb-6">
                   <h4 className="font-bold text-sm text-gray-900 uppercase tracking-wider mb-4">
                     Danh mục
@@ -388,7 +392,6 @@ function HomePage() {
                   </div>
                 </div>
 
-                {/* Lọc Giá */}
                 <div className="mb-6">
                   <h4 className="font-bold text-sm text-gray-900 uppercase tracking-wider mb-4">
                     Khoảng giá
@@ -421,7 +424,6 @@ function HomePage() {
                   </div>
                 </div>
 
-                {/* Banner Quảng Cáo Nhỏ */}
                 <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl p-5 shadow-inner mt-8">
                   <p className="text-[10px] font-black uppercase tracking-widest mb-2 text-blue-200">
                     Mã giảm giá
@@ -439,7 +441,6 @@ function HomePage() {
               </div>
             </div>
 
-            {/* DANH SÁCH SẢN PHẨM */}
             <div>
               {loading ? (
                 <div className="text-center py-32 bg-white rounded-3xl border border-gray-200 shadow-sm">
@@ -448,9 +449,8 @@ function HomePage() {
                     Đang tìm kiếm laptop phù hợp nhất...
                   </p>
                 </div>
-              ) : products.length > 0 ? (
+              ) : products?.length > 0 ? (
                 <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">
-                  {/* GRID CHIA CỘT RESPONSIVE CHUẨN MỰC */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6">
                     {products.slice(0, visibleCount).map((product) => (
                       <ProductCard key={product._id} product={product} />
