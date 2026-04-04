@@ -14,6 +14,11 @@ const authApi = {
     return axiosClient.post(url, data);
   },
 
+  // --- THÊM HÀM NÀY CHO GOOGLE ---
+  googleLogin: (token) => {
+    return axiosClient.post("/auth/google", { token });
+  },
+
   // Hàm lấy thông tin profile
   getProfile: () => {
     const url = "/auth/me";
@@ -29,8 +34,6 @@ const authApi = {
   changePassword: (data) => {
     return axiosClient.put("/auth/changepassword", data);
   },
-
-  // --- THÊM 2 HÀM NÀY VÀO ---
 
   // 3. Quên mật khẩu (Gửi email)
   forgotPassword: (email) => {

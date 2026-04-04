@@ -3,6 +3,7 @@ import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import authApi from "../api/authApi";
 import { AuthContext } from "../context/AuthContext";
+import { GoogleLogin } from "@react-oauth/google"; // <-- THÊM IMPORT NÀY
 
 function LoginPage() {
   const [email, setEmail] = useState("");
@@ -26,6 +27,28 @@ function LoginPage() {
       setError(
         err.response?.data?.message ||
           "Đăng nhập thất bại. Vui lòng kiểm tra lại email hoặc mật khẩu.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // --- THÊM HÀM XỬ LÝ KHI GOOGLE TRẢ VỀ THÀNH CÔNG ---
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError("");
+    setIsLoading(true);
+    try {
+      const response = await authApi.googleLogin(credentialResponse.credential);
+      // Gọi hàm login từ AuthContext để lưu user và token như bình thường
+      login(
+        response.user || response.data?.user,
+        response.token || response.data?.token,
+      );
+      navigate("/");
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Đăng nhập Google thất bại. Vui lòng thử lại.",
       );
     } finally {
       setIsLoading(false);
@@ -172,6 +195,31 @@ function LoginPage() {
                 </button>
               </div>
             </form>
+
+            {/* --- THÊM PHẦN GIAO DIỆN NÚT GOOGLE --- */}
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="bg-slate-50 px-2 text-gray-500">
+                    Hoặc tiếp tục với
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-center">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => {
+                    setError("Kết nối với Google thất bại.");
+                  }}
+                  useOneTap
+                />
+              </div>
+            </div>
+            {/* --- KẾT THÚC PHẦN THÊM --- */}
 
             <div className="mt-8 text-center text-sm text-gray-600">
               Bạn chưa có tài khoản?{" "}

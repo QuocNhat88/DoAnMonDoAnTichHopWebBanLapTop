@@ -12,6 +12,11 @@ router.post(
   authController.register,
 );
 router.post("/login", validate(authSchema.loginSchema), authController.login);
+
+// <-- THÊM ROUTE GOOGLE VÀO ĐÂY -->
+// Lưu ý: Không validate bằng authSchema.loginSchema vì luồng Google chỉ gửi lên 'token', không gửi email/password
+router.post("/google", authController.googleLogin);
+
 router.post(
   "/forgotpassword",
   validate(authSchema.forgotPasswordSchema),

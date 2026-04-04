@@ -2,7 +2,11 @@ const User = require("../user/user.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const sendEmail = require("../../utils/sendEmail"); // Cẩn thận đường dẫn này nhé
+const sendEmail = require("../../utils/sendEmail");
+const { OAuth2Client } = require("google-auth-library"); // <-- THÊM THƯ VIỆN GOOGLE
+
+// Khởi tạo Google Client
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const registerService = async (userData) => {
   const { username, email, password } = userData;
@@ -113,6 +117,50 @@ const resetPasswordService = async (resetToken, newPassword) => {
   await user.save();
 };
 
+// <-- HÀM MỚI: XỬ LÝ ĐĂNG NHẬP GOOGLE -->
+const googleLoginService = async (idToken) => {
+  // 1. Xác thực token với Google
+  const ticket = await client.verifyIdToken({
+    idToken: idToken,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+
+  // 2. Lấy thông tin user từ Google
+  const payload = ticket.getPayload();
+  const { sub, email, name, picture } = payload; // sub chính là googleId
+
+  // 3. Kiểm tra user trong DB
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    // Nếu chưa có tài khoản -> Tạo mới
+    user = new User({
+      // Tạo username ngẫu nhiên từ email tránh trùng lặp
+      username:
+        email.split("@")[0] + "_" + Math.random().toString(36).substring(2, 7),
+      email: email,
+      googleId: sub,
+      fullName: name,
+      avatar: picture,
+      // Đã set password required: false ở model nên không cần truyền vào
+    });
+    await user.save();
+  } else if (!user.googleId) {
+    // Nếu user đã đăng ký bằng email/password trước đó -> Cập nhật thêm googleId
+    user.googleId = sub;
+    user.avatar = user.avatar || picture;
+    await user.save();
+  }
+
+  // 4. Tạo JWT token của hệ thống y hệt như hàm loginService
+  const jwtPayload = { user: { id: user._id, role: user.role } };
+  const token = jwt.sign(jwtPayload, process.env.SECRET_KEY, {
+    expiresIn: "1h",
+  });
+
+  return { token, user };
+};
+
 module.exports = {
   registerService,
   loginService,
@@ -120,4 +168,5 @@ module.exports = {
   changePasswordService,
   forgotPasswordService,
   resetPasswordService,
+  googleLoginService, // <-- NHỚ XUẤT HÀM NÀY RA
 };

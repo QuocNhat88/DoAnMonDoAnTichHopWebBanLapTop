@@ -39,13 +39,11 @@ const updateUserProfile = async (req, res) => {
       req.user.id,
       req.body,
     );
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Cập nhật thành công!",
-        data: updatedUser,
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Cập nhật thành công!",
+      data: updatedUser,
+    });
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
   }
@@ -69,12 +67,10 @@ const changePassword = async (req, res) => {
 const forgotPassword = async (req, res) => {
   try {
     await authService.forgotPasswordService(req.body.email);
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Nếu email tồn tại, chúng tôi đã gửi link.",
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Nếu email tồn tại, chúng tôi đã gửi link.",
+    });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -91,6 +87,25 @@ const resetPassword = async (req, res) => {
   }
 };
 
+// <-- HÀM MỚI: XỬ LÝ ĐĂNG NHẬP GOOGLE TỪ FRONTEND GỬI XUỐNG -->
+const googleLogin = async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) throw new Error("Không tìm thấy token của Google");
+
+    // Gọi sang hàm googleLoginService ta vừa viết ở bước trước
+    const data = await authService.googleLoginService(token);
+
+    return res.status(200).json({
+      success: true,
+      message: "Đăng nhập Google thành công!",
+      ...data,
+    });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -99,4 +114,5 @@ module.exports = {
   changePassword,
   forgotPassword,
   resetPassword,
+  googleLogin, // <-- ĐỪNG QUÊN EXPORT HÀM MỚI
 };
