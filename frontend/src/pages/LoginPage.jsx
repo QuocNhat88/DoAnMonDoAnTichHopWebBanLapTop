@@ -80,10 +80,10 @@ function LoginPage() {
               </span>
             </Link>
             <h2 className="text-3xl font-black text-gray-900 mb-2">
-              Chào mừng trở lại!
+              Tài khoản admin để anh/chị test chức năng admin
             </h2>
             <p className="text-sm text-gray-500 mb-8">
-              Đăng nhập để quản lý đơn hàng và nhận ưu đãi riêng.
+              tk: nnhat426@gmail.com mk: 123456
             </p>
           </div>
 
