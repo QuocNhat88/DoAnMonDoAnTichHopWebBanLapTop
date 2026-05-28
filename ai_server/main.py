@@ -42,7 +42,7 @@ SHOP_INFO = """
 """
 
 # Biến toàn cục mới
-VECTOR_DB = None # Thay thế cho PRODUCT_CONTEXT cũ
+VECTOR_DB = None 
 PRODUCT_LIST_RAW = []    
 MARKET_INSIGHTS = ""     
 
@@ -116,7 +116,7 @@ def load_data_from_mongo():
                 # Gom dữ liệu thành 1 đoạn văn bản để tạo Vector
                 text_content = f"Tên laptop: {prod['name']}. Hãng sản xuất: {brand}. Loại: {cat}. Giá bán: {prod['price']} VND. Cấu hình CPU: {specs.get('cpu', '')}, RAM: {specs.get('ram', '')}, Card đồ họa VGA: {specs.get('gpu', '')}."
                 
-                # Lưu thêm siêu dữ liệu (metadata) để lấy ra làm thẻ UI sau này
+                # Lưu thêm siêu dữ liệu (metadata) 
                 metadata = {
                     "id": str(prod["_id"]),
                     "name": prod["name"],
