@@ -12,7 +12,7 @@ const cartApi = {
   // Backend: router.post("/", ...) -> URL: /api/cart
   // Data gửi lên: { productId, quantity }
   addToCart: (data) => {
-    return axiosClient.post("/cart", data); // Bỏ chữ /add đi
+    return axiosClient.post("/cart", data);
   },
 
   // 3. Cập nhật số lượng
