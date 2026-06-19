@@ -6,7 +6,7 @@ const ChatBubble = () => {
   const [messages, setMessages] = useState([
     {
       sender: "bot",
-      text: "Xin chào! Mình là trợ lý AI của cửa hàng. Bạn đang tìm laptop văn phòng, đồ họa hay gaming nhỉ?",
+      text: "Em deploy bằng vercel với render nên nó bị sleep mất ạ mỗi lần khởi động lại phải cả phút sau nó mới trả lời được ạ nên em đang chuẩn bị deploy lên vps ạ",
     },
   ]);
   const [input, setInput] = useState("");

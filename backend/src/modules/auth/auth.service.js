@@ -73,7 +73,7 @@ const forgotPasswordService = async (email) => {
   user.resetPasswordExpires = Date.now() + 10 * 60 * 1000;
   await user.save({ validateBeforeSave: false });
 
-  const resetUrl = `${process.env.FRONTEND_URL || "http://localhost"}/resetpassword/${resetToken}`;
+  const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/resetpassword/${resetToken}`;
   const message = `Click vào đây để đặt lại mật khẩu: <a href="${resetUrl}">Reset Password</a>`;
 
   try {
