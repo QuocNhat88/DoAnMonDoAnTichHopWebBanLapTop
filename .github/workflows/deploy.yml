@@ -1,0 +1,36 @@
+name: Tự động Deploy lên VPS
+
+on:
+  push:
+    branches:
+      - main # Nếu nhánh chính của bạn tên là master thì sửa lại chữ này nhé
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. GitHub tải code của bạn về máy ảo của nó
+      - name: Lấy mã nguồn
+        uses: actions/checkout@v3
+
+      # 2. Copy toàn bộ code từ GitHub sang con VPS của bạn
+      - name: Copy code sang VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          source: "."
+          target: "/root/my-project" # Thư mục chứa code trên VPS
+
+      # 3. Chui vào VPS và chạy lệnh Docker
+      - name: Chạy Docker Compose trên VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            cd /root/my-project
+            docker compose down
+            docker compose up -d --build
