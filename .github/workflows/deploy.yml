@@ -3,7 +3,7 @@ name: Tự động Deploy lên VPS
 on:
   push:
     branches:
-      - main # Nếu nhánh chính của bạn tên là master thì sửa lại chữ này nhé
+      - production
 
 jobs:
   deploy:
