@@ -5,8 +5,8 @@ services:
   ai_server:
     build: ./ai_server
     container_name: my-ai-server
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000" # Chỉ mở cổng 8000 bên trong mạng Docker, bên ngoài Internet không vào trực tiếp được nữa
     env_file:
       - ./.env
     restart: unless-stopped
@@ -15,20 +15,30 @@ services:
   backend:
     build: ./backend
     container_name: my-backend
-    ports:
-      - "3000:3000"
-    # Nếu file .env nằm ở thư mục gốc, dùng: ./.env
-    # Nếu file .env nằm trong thư mục backend, dùng: ./backend/.env
+    expose:
+      - "3000" # Chỉ mở cổng 3000 bên trong mạng Docker
     env_file:
       - ./.env
     restart: unless-stopped
 
-  # 3. Dịch vụ Frontend (ReactJS / Nginx)
+  # 3. Dịch vụ Frontend (ReactJS / Nginx nội bộ)
   frontend:
     build: ./frontend
     container_name: my-frontend
-    ports:
-      - "80:80" # Truy cập web ở máy thật qua http://localhost
+    expose:
+      - "80" # Chỉ mở cổng 80 nội bộ để Nginx trung tâm gọi vào
     depends_on:
       - backend
+    restart: unless-stopped
+
+  # 4. Dịch vụ NGINX TRUNG TÂM (Gateway)
+  nginx_gateway:
+    build: ./nginx
+    container_name: my-nginx-gateway
+    ports:
+      - "80:80" # Chiếm duy nhất cổng 80 của VPS để hứng toàn bộ traffic từ Internet
+    depends_on:
+      - frontend
+      - backend
+      - ai_server
     restart: unless-stopped

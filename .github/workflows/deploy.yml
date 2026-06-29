@@ -9,7 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # 1. GitHub tải code của bạn về máy ảo của nó
+      # 1. GitHub tải code của dự án và lưu vô thư mục ảo
       - name: Lấy mã nguồn
         uses: actions/checkout@v3
 

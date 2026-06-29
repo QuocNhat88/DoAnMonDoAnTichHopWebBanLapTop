@@ -11,7 +11,7 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-
+    
 # --- GIAI ĐOẠN 2: Chạy web bằng Nginx ---
 FROM nginx:alpine
 
