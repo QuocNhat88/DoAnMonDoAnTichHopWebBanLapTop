@@ -3,7 +3,8 @@ import axios from "axios";
 
 // Nếu có biến môi trường thì dùng, không có thì tự lùi về dùng link Render
 const baseURL =
-  import.meta.env.VITE_BACKEND_URL || "https://backendmodular.onrender.com/api";
+  import.meta.env.VITE_BACKEND_URL ||
+  /*"https://backendmodular.onrender.com/api"*/ "/api";
 
 const axiosClient = axios.create({
   baseURL: baseURL,

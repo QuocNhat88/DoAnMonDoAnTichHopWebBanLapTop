@@ -2,7 +2,8 @@ import axios from "axios";
 
 // Ưu tiên dùng link Local (nếu có), dự phòng bằng link Render
 const AI_BASE_URL =
-  import.meta.env.VITE_AI_URL || "https://ai-server-g53g.onrender.com";
+  import.meta.env.VITE_AI_URL ||
+  /*"https://ai-server-g53g.onrender.com"*/ "/ai";
 
 const chatApi = {
   sendMessage: async (message) => {
